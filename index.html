@@ -465,7 +465,7 @@ function changeLang(l) {
     updateUI(); 
 }
 
-// --- تعديل: عند فتح الصفحة، لو المستخدم مسجل دخول، نفذ checkLogin عشان يسحب الكود من الرابط ---
+// --- تعديل: عند فتح الصفحة، لو المستخدم مسجل  دخول، نفذ checkLogin عشان يسحب الكود من الرابط ---
 window.onload = () => { 
     const urlParams = new URLSearchParams(window.location.search);
     const hasCode = urlParams.has('code');
