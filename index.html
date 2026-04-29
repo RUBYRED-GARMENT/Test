@@ -382,12 +382,24 @@
                 return;
             }
 
-            list.innerHTML = filtered.reverse().map(row => `
+            list.innerHTML = filtered.reverse().map(row => {
+                // منطق معالجة الوقت وتعديل فرق الساعة برمجياً
+                let duration = row[5] || '-';
+                if(duration.includes('m')) {
+                    let totalMinutes = parseInt(duration);
+                    if(totalMinutes >= 60) {
+                        // إذا كانت المدة أكبر من ساعة (مثل 65 دقيقة) نقوم بطرح الساعة الزائدة الناتجة عن فرق التوقيت
+                        let actualMinutes = totalMinutes % 60;
+                        duration = actualMinutes + "m";
+                    }
+                }
+
+                return `
                 <div class="history-item">
                     <div class="history-grid">
                         <div><span class="hist-label">${translate('hStart')}</span><span class="hist-val">${row[3] || '-'}</span></div>
                         <div><span class="hist-label">${translate('hEnd')}</span><span class="hist-val">${row[4] || '-'}</span></div>
-                        <div><span class="hist-label">${translate('hDur')}</span><span class="hist-val" style="color:var(--orange)">${row[5] || '-'}</span></div>
+                        <div><span class="hist-label">${translate('hDur')}</span><span class="hist-val" style="color:var(--orange)">${duration}</span></div>
                         <div><span class="hist-label">${translate('hStat')}</span><span class="hist-val">${row[6] || '-'}</span></div>
                     </div>
                     <div style="margin-top:12px; padding-top:10px; border-top:1px solid #1e293b">
@@ -395,7 +407,7 @@
                         <p style="margin:5px 0 0; font-size:0.9rem; color:var(--muted)">${row[7] || '-'}</p>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         } catch (e) { list.innerHTML = '<p style="text-align:center; color:var(--red);">Connection Error!</p>'; }
     }
 
