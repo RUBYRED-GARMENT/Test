@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html lang="en" id="htmlPage" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUBYRED | Assets Management Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="pic/logooo.png">
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --primary: #d80f0f;
+            --text: #f1f5f9; --muted: #94a3b8; --border: #334155;
+            --green: #16a34a; --red: #dc2626; --orange: #f59e0b; --whatsapp: #25d366;
+            --singer: #3b82f6; --over: #a855f7; --orlay: #ec4899; --stock: #64748b;
+        }
+
+```
+    /* --- Login Screen Styles --- */
+    #lockScreen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: var(--bg); display: flex; align-items: center; justify-content: center;
+        z-index: 9999; transition: 0.5s;
+    }
+    .login-box {
+        background: var(--card); padding: 40px; border-radius: 20px;
+        border: 1px solid var(--border); text-align: center; width: 90%; max-width: 400px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .login-box i { font-size: 50px; color: var(--primary); margin-bottom: 20px; }
+    .login-box h2 { font-weight: 800; margin-bottom: 10px; }
+    .login-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 25px; }
+    .login-box input {
+        width: 100%; padding: 15px; background: var(--bg); border: 2px solid var(--border);
+        border-radius: 12px; color: white; text-align: center; font-size: 1.5rem;
+        letter-spacing: 5px; outline: none; transition: 0.3s; box-sizing: border-box;
+    }
+    .login-box input:focus { border-color: var(--primary); }
+    .login-btn {
+        width: 100%; padding: 15px; margin-top: 20px; background: var(--primary);
+        color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+    }
+    #mainWrapper { display: none; } 
+
+    /* --- Global Styles --- */
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; }
+    .container { max-width: 1200px; margin: auto; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; position: relative; }
+    .brand { font-weight: 800; font-size: 1.5rem; color:white; letter-spacing: 1px; }
+    .logo img { height: 55px; width: 55px; animation: spin 4s linear infinite; transform-origin: center center; display: block; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @media (max-width: 768px) { .logo { display: none !important; } }
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 15px; }
+    .stat-box { background: var(--card); padding: 12px; border-radius: 12px; border: 1px solid var(--border); text-align: center; cursor: pointer; transition: 0.2s; }
+    .stat-box h3 { margin: 0; font-size: 1.2rem; }
+    .stat-box p { margin: 2px 0 0; font-size: 0.75rem; font-weight: 600; }
+    .active-filter { border: 2px solid white !important; background: rgba(255,255,255,0.15); box-shadow: 0 0 10px rgba(255,255,255,0.1); }
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    select, input { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 10px; border-radius: 10px; font-family: 'Cairo'; outline: none; flex: 1; min-width: 140px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+    
+    .machine-card { background: var(--card); border-radius: 15px; padding: 15px; border: 1px solid var(--border); transition: 0.3s; cursor: pointer; position: relative; }
+    .urgent-glow { 
+        border: 2px solid var(--red) !important; 
+        animation: glow-pulse 1.5s infinite alternate; 
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+    }
+    @keyframes glow-pulse {
+        from { box-shadow: 0 0 5px rgba(220, 38, 38, 0.4); }
+        to { box-shadow: 0 0 20px rgba(220, 38, 38, 0.8); }
+    }
+
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .card-body { display: none; margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .machine-card.expanded .card-body { display: block; }
+    .days-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; font-weight: bold; margin-top: 8px; display: inline-block; }
+    .days-urgent { background: var(--red); color: white; }
+    .days-soon { background: var(--orange); color: white; }
+    .days-safe { background: var(--green); color: white; }
+    .status-badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 15px; font-weight: 700; text-transform: uppercase; }
+    .bg-active { background: rgba(22, 163, 74, 0.2); color: var(--green); }
+    .bg-repair { background: rgba(220, 38, 38, 0.2); color: var(--red); }
+    .bg-stock { background: rgba(100, 116, 139, 0.2); color: var(--stock); }
+    .maint-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 10px; }
+    
+    .note-area { display: none; margin-top: 10px; animation: fadeIn 0.3s; }
+    .note-area textarea { 
+        width: 100%; background: #0f172a; color: white; border: 1px solid var(--singer); 
+        border-radius: 8px; padding: 10px; font-family: 'Cairo'; font-size: 0.8rem; resize: none; box-sizing: border-box;
+    }
+    .btn-done { background: var(--green); color: white; border: none; width: 100%; padding: 8px; border-radius: 8px; margin-top: 5px; font-weight: 700; cursor: pointer; }
+    
+    .btn-start { background: var(--orange); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 0.8rem; transition: 0.2s; }
+    .btn-finish { background: var(--singer); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 0.8rem; transition: 0.2s; }
+    .btn-history { background: #475569; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; font-size: 0.8rem; margin-top: 8px; width: 100%; transition: 0.2s; }
+    .whatsapp-btn { background: var(--whatsapp); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; width: 100%; font-family: 'Cairo'; margin-top: 8px; }
+    .detail-item { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .detail-label { color: var(--muted); }
+
+    /* --- Modal Styles --- */
+    .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
+    .modal-content { background: var(--card); margin: 5% auto; padding: 20px; border-radius: 20px; width: 90%; max-width: 600px; border: 1px solid var(--border); max-height: 85vh; overflow-y: auto; position: relative; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; position: sticky; top: 0; background: var(--card); z-index: 10; }
+    .history-item { background: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid var(--primary); }
+    [dir="rtl"] .history-item { border-left: none; border-right: 4px solid var(--primary); }
+    .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.85rem; }
+    .hist-label { color: var(--muted); font-size: 0.7rem; display: block; margin-bottom: 2px; }
+    .hist-val { font-weight: 600; color: #fff; }
+</style>
+```
+
+</head>
+<body>
+
+<div id="lockScreen">
+    <div class="login-box">
+        <i class="fas fa-shield-alt"></i>
+        <h2>SECURE ACCESS</h2>
+        <p>Please enter the 6-digit passcode</p>
+        <input type="password" id="passInput" placeholder="••••••" maxlength="6">
+        <button class="login-btn" onclick="checkLogin()">LOGIN</button>
+        <p id="errHint" style="color:var(--red); margin-top:15px; display:none; font-weight:bold;">Invalid Passcode!</p>
+    </div>
+</div>
+
+<div id="mainWrapper">
+    <div class="container">
+        <header class="top-nav">
+            <div class="brand">RUBY<span style="color:red">RED</span> MACHINES</div>
+            <div class="logo"><img src="pic/logooo.png" alt="rubyred" /></div>
+            <select id="langSelect" onchange="changeLang(this.value)" style="cursor: pointer; flex: none;">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+                <option value="tr">Türkçe</option>
+            </select>
+        </header>
+
+```
+    <div class="stats-container" id="statusStats"></div>
+    <div class="stats-container" id="typeStats"></div>
+
+    <div class="controls">
+        <input type="text" id="searchInput" style="flex:2" placeholder="Search code..." onkeyup="filterData()">
+        <select id="lineFilter" onchange="filterData()"></select>
+        <select id="maintFilter" onchange="filterData()"></select>
+    </div>
+
+    <div class="grid" id="machinesGrid"></div>
+</div>
+```
+
+</div>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="historyTitle" style="margin:0"></h3>
+            <button onclick="closeHistory()" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="historyList"></div>
+    </div>
+</div>
+
+<script>
+    const SHEET_ID = "1p1JEBOFYfCmys864VVBH-qqzByErjSCxdhu-cqT4Grw";
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+    const HISTORY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=history`;
+    const MAINTENANCE_PHONE = "‪201227160614‬";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEjGwm3AmxAA45TD54sOtwTggluGB2QdutCzH-uYU14KelVIDIN2ciwpY1xWjrvELRWg/exec"; 
+
+    let allMachines = [];
+    let currentLang = 'en';
+    let currentStatusFilter = 'all';
+    let currentTypeFilter = 'all';
+
+    const dictionary = {
+        en: { 
+            total: "Total", active: "Active", repair: "Repair", stock: "Stock", singer: "Singer", over: "Over", orlay: "Orlay", 
+            btnReport: "Send WhatsApp Report", daysLeft: "{n} Days left", daysLate: "{n} Days late", today: "Today", 
+            optAll: "Maint: All", startM: "Start Maint", finishM: "Finish Maint", search: "Search code...", allLines: "All Lines", 
+            urgent: "Urgent 🚨", soon: "Soon", safe: "Safe", done: "Done", notePh: "Write maintenance summary here...", 
+            historyBtn: "Maintenance History", hStart: "Start Date", hEnd: "End Date", hDur: "Maintenance Time", hStat: "Status", hNote: "Note", noData: "No records found."
+        },
+        ar: { 
+            total: "الإجمالي", active: "يعمل", repair: "أعطال", stock: "مخزن", singer: "سنجر", over: "أوفر", orlay: "أورليه", 
+            btnReport: "إرسال بلاغ واتساب", daysLeft: "باقي {n} يوم", daysLate: "متأخر {n} يوم", today: "موعد اليوم", 
+            optAll: "المواعيد: الكل", startM: "بدء صيانة", finishM: "إنهاء صيانة", search: "بحث بالكود...", allLines: "كل الخطوط", 
+            urgent: "عاجل 🚨", soon: "قريباً", safe: "آمن", done: "تم الحفظ", notePh: "اكتب ملخص ما تم إصلاحه هنا...", 
+            historyBtn: "سجل التصليحات", hStart: "تاريخ البدء", hEnd: "تاريخ الانتهاء", hDur: "مدة الإصلاح", hStat: "الحالة", hNote: "ملاحظات", noData: "لا توجد سجلات."
+        },
+        tr: { 
+            total: "Toplam", active: "Aktif", repair: "Arıza", stock: "Stok", singer: "Singer", over: "Over", orlay: "Orlay", 
+            btnReport: "WP Raporu Gönder", daysLeft: "{n} gün kaldı", daysLate: "{n} gün gecikti", today: "Bugün", 
+            optAll: "Tümü", startM: "Başlat", finishM: "Bitir", search: "Kod ara...", allLines: "Tüm Hatlar", 
+            urgent: "Acil 🚨", soon: "Yakında", safe: "Güvenli", done: "Tamam", notePh: "Özeti buraya yazın...", 
+            historyBtn: "Bakım Geçmişi", hStart: "Başlangıç", hEnd: "Bitiش", hDur: "Bakım Süresi", hStat: "Durum", hNote: "Not", noData: "Kayıt bulunamadى."
+        }
+    };
+
+    function checkLogin() {
+        const pass = document.getElementById('passInput').value;
+        if(pass === "505050") {
+            document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('mainWrapper').style.display = 'block';
+            
+            // --- تعديل: سحب الكود من الرابط ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeFromUrl = urlParams.get('code');
+            if (codeFromUrl) {
+                document.getElementById('searchInput').value = codeFromUrl;
+            }
+            // ---------------------------------
+
+            init();
+            sessionStorage.setItem('isAuth', 'true');
+        } else {
+            document.getElementById('errHint').style.display = 'block';
+            document.getElementById('passInput').value = '';
+        }
+    }
+
+    async function init() {
+        populateFilters();
+        try {
+            const response = await fetch(SHEET_URL);
+            const text = await response.text();
+            const rows = text.split('\n').map(r => r.split('","').map(c => c.replace(/"/g, '')));
+            const headers = rows[0].map(h => h.trim());
+            allMachines = rows.slice(1).map(row => {
+                let obj = {}; headers.forEach((h, i) => obj[h] = row[i]?.trim());
+                return obj;
+            }).filter(m => m.Code);
+            updateUI();
+        } catch (e) { console.error("Load Error"); }
+    }
+
+    function populateFilters() {
+        const lineSelect = document.getElementById('lineFilter');
+        lineSelect.innerHTML = `<option value="all">${translate('allLines')}</option>`;
+        for(let i=1; i<=30; i++) {
+            lineSelect.innerHTML += `<option value="LINE ${i}">LINE ${i}</option>`;
+        }
+        document.getElementById('maintFilter').innerHTML = `
+            <option value="all">${translate('optAll')}</option>
+            <option value="urgent">${translate('urgent')}</option>
+            <option value="soon">${translate('soon')}</option>
+            <option value="safe">${translate('safe')}</option>
+        `;
+        document.getElementById('searchInput').placeholder = translate('search');
+    }
+
+    function getDaysDiff(dateStr) {
+        if (!dateStr || dateStr === '-') return null;
+        const d = new Date(dateStr); if (isNaN(d)) return null;
+        const today = new Date(); today.setHours(0,0,0,0);
+        return Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+    }
+
+    function translate(key, n) {
+        let text = dictionary[currentLang][key] || key;
+        return n !== undefined ? text.replace('{n}', Math.abs(n)) : text;
+    }
+
+    function updateUI() {
+        const statsStatus = document.getElementById('statusStats');
+        const counts = {
+            active: allMachines.filter(m => m.Status?.toLowerCase() === 'active').length,
+            repair: allMachines.filter(m => ['repair', 'down', 'أعطال'].includes(m.Status?.toLowerCase())).length,
+            stock: allMachines.filter(m => m.Status?.toLowerCase() === 'stock').length
+        };
+
+        statsStatus.innerHTML = `
+            <div class="stat-box ${currentStatusFilter==='all'?'active-filter':''}" onclick="resetAllFilters()"><h3>${allMachines.length}</h3><p>${translate('total')}</p></div>
+            <div class="stat-box ${currentStatusFilter==='active'?'active-filter':''}" style="border-bottom:4px solid var(--green)" onclick="setStatusFilter('active')"><h3>${counts.active}</h3><p>${translate('active')}</p></div>
+            <div class="stat-box ${currentStatusFilter==='repair'?'active-filter':''}" style="border-bottom:4px solid var(--red)" onclick="setStatusFilter('repair')"><h3>${counts.repair}</h3><p>${translate('repair')}</p></div>
+            <div class="stat-box ${currentStatusFilter==='stock'?'active-filter':''}" style="border-bottom:4px solid var(--stock)" onclick="setStatusFilter('stock')"><h3>${counts.stock}</h3><p>${translate('stock')}</p></div>
+        `;
+
+        // =====================================================
+        // هنا التعديل الوحيد — typeStats ديناميكي من الشيت
+        // =====================================================
+        const statsType = document.getElementById('typeStats');
+        const typeColors = ['var(--singer)', 'var(--over)', 'var(--orlay)', 'var(--orange)', 'var(--green)', 'var(--primary)', '#06b6d4', '#8b5cf6'];
+        const typeCounts = {};
+        allMachines.forEach(m => {
+            const tp = m.Type?.trim();
+            if (tp) typeCounts[tp] = (typeCounts[tp] || 0) + 1;
+        });
+        const uniqueTypes = Object.keys(typeCounts).sort((a, b) => typeCounts[b] - typeCounts[a]);
+        statsType.innerHTML = uniqueTypes.map((type, i) => {
+            const color    = typeColors[i % typeColors.length];
+            const isActive = currentTypeFilter === type ? 'active-filter' : '';
+            return `<div class="stat-box ${isActive}" style="border-bottom:4px solid ${color}" onclick="setTypeFilter('${type.replace(/'/g, "\\'")}')">
+                        <h3>${typeCounts[type]}</h3><p>${type}</p>
+                    </div>`;
+        }).join('');
+        // =====================================================
+
+        filterData();
+    }
+
+    function filterData() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const maintF = document.getElementById('maintFilter').value;
+        const lineF = document.getElementById('lineFilter').value;
+        const grid = document.getElementById('machinesGrid');
+        grid.innerHTML = "";
+
+        allMachines.forEach(m => {
+            const mCode = m.Code?.toLowerCase().trim();
+            const mStat = (m.Status || "").toLowerCase();
+            const mType = (m.Type || "").toLowerCase();
+            const mLocation = (m.Location || "").toUpperCase();
+            
+            const diff = getDaysDiff(m["Next Maintenance"]);
+            let mState = (diff !== null && diff <= 7) ? 'urgent' : (diff !== null && diff <= 15 ? 'soon' : 'safe');
+
+            // --- تعديل: مقارنة دقيقة تماماً لمنع تشابه الأرقام (مثل 1 و 10) ---
+            let matchesSearch = query === '' || mCode === query;
+            // -------------------------------------------------------------
+            
+            let matchesStatus = currentStatusFilter === 'all' || (currentStatusFilter === 'active' && mStat === 'active') || (currentStatusFilter === 'repair' && ['repair', 'down', 'أعطال'].includes(mStat)) || (currentStatusFilter === 'stock' && mStat === 'stock');
+            const matchesType = currentTypeFilter === 'all' || mType.includes(currentTypeFilter.toLowerCase());
+            const matchesMaint = maintF === 'all' || mState === maintF;
+            let matchesLine = lineF === 'all' || new RegExp(`\\b${lineF.match(/\d+/)?.[0]}\\b`).test(mLocation);
+
+            if (matchesSearch && matchesStatus && matchesType && matchesMaint && matchesLine) {
+                const card = document.createElement('div');
+                card.className = `machine-card ${mState === 'urgent' ? 'urgent-glow' : ''}`;
+                
+                // لو في بحث برقم كود معين، خلّي الكارت مفتوح تلقائياً
+                if(query !== '') card.classList.add('expanded');
+                
+                card.onclick = (e) => { 
+                    if(!e.target.closest('button') && !e.target.closest('textarea')) card.classList.toggle('expanded'); 
+                };
+                
+                let daysTxt = diff === null ? "" : (diff > 0 ? translate('daysLeft', diff) : (diff < 0 ? translate('daysLate', diff) : translate('today')));
+                let daysCls = diff <= 7 ? 'days-urgent' : (diff <= 15 ? 'days-soon' : 'days-safe');
+                
+                let bodyContent = "";
+                Object.entries(m).forEach(([k, v]) => {
+                    if(!['Code','Status','Type','Next Maintenance'].includes(k)) bodyContent += `<div class="detail-item"><span class="detail-label">${k}:</span><span>${v||'-'}</span></div>`;
+                });
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div><small style="color:var(--muted)">${translate(m.Type)}</small><h4 style="margin:2px 0">${m.Code}</h4></div>
+                        <span class="status-badge ${mStat === 'active' ? 'bg-active' : (['repair', 'down', 'أعطال'].includes(mStat) ? 'bg-repair' : 'bg-stock')}">${translate(mStat)}</span>
+                    </div>
+                    <div style="font-size:0.85rem; font-weight:600">${m.Model || ''}</div>
+                    <div style="font-size:0.75rem; color:var(--muted); margin-top:4px"><i class="fas fa-map-marker-alt"></i> ${m.Location || '-'}</div>
+                    
+                    ${diff !== null ? `<span class="days-badge ${daysCls}">${daysTxt}</span>` : ''}
+
+                    <div class="card-body">
+                        ${bodyContent}
+                        <div class="maint-actions" id="actions-${m.Code}">
+                            <button class="btn-start" onclick="handleMaint('${m.Code}', '${m.Location}', '${m.Type}', 'start', this)">
+                                <i class="fas fa-play"></i> ${translate('startM')}
+                            </button>
+                            <button class="btn-finish" onclick="showNoteArea('${m.Code}', '${m.Location}', '${m.Type}', this)">
+                                <i class="fas fa-check"></i> ${translate('finishM')}
+                            </button>
+                        </div>
+                        <div class="note-area" id="noteArea-${m.Code}">
+                            <textarea id="noteInput-${m.Code}" placeholder="${translate('notePh')}"></textarea>
+
+```
+                        <button class="btn-done" onclick="submitMaintWithNote('${m.Code}', '${m.Location}', '${m.Type}', this)">
+                            ${translate('done')}
+                        </button>
+                    </div>
+                    <button class="btn-history" onclick="showHistory('${m.Code}')">
+                        <i class="fas fa-history"></i> ${translate('historyBtn')}
+                    </button>
+                    <button class="whatsapp-btn" onclick="sendWA(${JSON.stringify(m).replace(/"/g, '&quot;')})">
+                        <i class="fab fa-whatsapp"></i> ${translate('btnReport')}
+                    </button>
+                </div>`;
+            grid.appendChild(card);
+        }
+    });
+}
+
+async function showHistory(code) {
+    const modal = document.getElementById('historyModal');
+    const list = document.getElementById('historyList');
+    document.getElementById('historyTitle').innerText = `${translate('historyBtn')} #${code}`;
+    list.innerHTML = '<div style="text-align:center; padding:30px;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>';
+    modal.style.display = 'block';
+
+    try {
+        const response = await fetch(HISTORY_URL);
+        const text = await response.text();
+        const rows = text.split('\n').map(r => r.split('","').map(c => c.replace(/"/g, '')));
+        const filtered = rows.slice(1).filter(row => row[0]?.trim() === code);
+
+        if(filtered.length === 0) {
+            list.innerHTML = `<p style="text-align:center; padding:20px; color:var(--muted);">${translate('noData')}</p>`;
+            return;
+        }
+
+        list.innerHTML = filtered.reverse().map(row => `
+            <div class="history-item">
+                <div class="history-grid">
+                    <div><span class="hist-label">${translate('hStart')}</span><span class="hist-val">${row[3] || '-'}</span></div>
+                    <div><span class="hist-label">${translate('hEnd')}</span><span class="hist-val">${row[4] || '-'}</span></div>
+                    <div><span class="hist-label">${translate('hDur')}</span><span class="hist-val" style="color:var(--orange)">${row[5] || '-'}</span></div>
+                    <div><span class="hist-label">${translate('hStat')}</span><span class="hist-val">${row[6] || '-'}</span></div>
+                </div>
+                <div style="margin-top:12px; padding-top:10px; border-top:1px solid #1e293b">
+                    <span class="hist-label">${translate('hNote')}</span>
+                    <p style="margin:5px 0 0; font-size:0.9rem; color:var(--muted)">${row[7] || '-'}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) { list.innerHTML = '<p style="text-align:center; color:var(--red);">Connection Error!</p>'; }
+}
+
+function closeHistory() { document.getElementById('historyModal').style.display = 'none'; }
+window.onclick = (e) => { if(e.target == document.getElementById('historyModal')) closeHistory(); };
+
+function showNoteArea(code, loc, type, btn) {
+    document.getElementById(`actions-${code}`).style.display = 'none';
+    document.getElementById(`noteArea-${code}`).style.display = 'block';
+}
+
+async function submitMaintWithNote(code, loc, type, btn) {
+    const note = document.getElementById(`noteInput-${code}`).value;
+    const originalText = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ code, location: loc, type, action: 'finish', note: note }) });
+        alert("Success ✅");
+        document.getElementById(`noteArea-${code}`).style.display = 'none';
+        document.getElementById(`actions-${code}`).style.display = 'grid';
+    } catch (e) { alert("Error!"); }
+    finally { btn.disabled = false; btn.innerHTML = originalText; }
+}
+
+async function handleMaint(code, loc, type, action, btn) {
+    const originalText = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ code, location: loc, type, action }) });
+        alert("Success ✅");
+    } catch (e) { alert("Error!"); }
+    finally { btn.disabled = false; btn.innerHTML = originalText; }
+}
+
+function sendWA(machine) {
+    const text = `🚨 *MAINTENANCE REQUEST*%0A%0A🆔 *Code:* ${machine.Code}%0A📍 *Location:* ${machine.Location || '-'}%0A⚙️ *Type:* ${machine.Type || '-'}%0A📦 *Model:* ${machine.Model || '-'}`;
+    window.open(`https://wa.me/${MAINTENANCE_PHONE}?text=${text}`, '_blank');
+}
+
+function setStatusFilter(s) { currentStatusFilter = s; updateUI(); }
+function setTypeFilter(t) { currentTypeFilter = currentTypeFilter === t ? 'all' : t; updateUI(); }
+function resetAllFilters() { currentStatusFilter = 'all'; currentTypeFilter = 'all'; document.getElementById('searchInput').value = ''; updateUI(); }
+function changeLang(l) { 
+    currentLang = l; 
+    document.getElementById('htmlPage').dir = l === 'ar' ? 'rtl' : 'ltr'; 
+    populateFilters();
+    updateUI(); 
+}
+
+// --- تعديل: عند فتح الصفحة، لو المستخدم مسجل دخول، نفذ checkLogin عشان يسحب الكود من الرابط ---
+window.onload = () => { 
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasCode = urlParams.has('code');
+
+    if(sessionStorage.getItem('isAuth') === 'true') { 
+        document.getElementById('lockScreen').style.display = 'none'; 
+        document.getElementById('mainWrapper').style.display = 'block'; 
+        
+        if(hasCode) {
+            document.getElementById('searchInput').value = urlParams.get('code');
+        }
+        init(); 
+    } 
+};
+```
+
+</script>
+</body>
+</html>
