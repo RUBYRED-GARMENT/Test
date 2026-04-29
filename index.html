@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en" id="htmlPage" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +15,6 @@
             --singer: #3b82f6; --over: #a855f7; --orlay: #ec4899; --stock: #64748b;
         }
 
-```
     /* --- Login Screen Styles --- */
     #lockScreen {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -108,7 +106,6 @@
     .hist-label { color: var(--muted); font-size: 0.7rem; display: block; margin-bottom: 2px; }
     .hist-val { font-weight: 600; color: #fff; }
 </style>
-```
 
 </head>
 <body>
@@ -136,7 +133,6 @@
             </select>
         </header>
 
-```
     <div class="stats-container" id="statusStats"></div>
     <div class="stats-container" id="typeStats"></div>
 
@@ -148,7 +144,6 @@
 
     <div class="grid" id="machinesGrid"></div>
 </div>
-```
 
 </div>
 
@@ -166,7 +161,7 @@
     const SHEET_ID = "1p1JEBOFYfCmys864VVBH-qqzByErjSCxdhu-cqT4Grw";
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
     const HISTORY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=history`;
-    const MAINTENANCE_PHONE = "‪201227160614‬";
+    const MAINTENANCE_PHONE = "201227160614";
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEjGwm3AmxAA45TD54sOtwTggluGB2QdutCzH-uYU14KelVIDIN2ciwpY1xWjrvELRWg/exec"; 
 
     let allMachines = [];
@@ -194,7 +189,7 @@
             btnReport: "WP Raporu Gönder", daysLeft: "{n} gün kaldı", daysLate: "{n} gün gecikti", today: "Bugün", 
             optAll: "Tümü", startM: "Başlat", finishM: "Bitir", search: "Kod ara...", allLines: "Tüm Hatlar", 
             urgent: "Acil 🚨", soon: "Yakında", safe: "Güvenli", done: "Tamam", notePh: "Özeti buraya yazın...", 
-            historyBtn: "Bakım Geçmişi", hStart: "Başlangıç", hEnd: "Bitiش", hDur: "Bakım Süresi", hStat: "Durum", hNote: "Not", noData: "Kayıt bulunamadى."
+            historyBtn: "Bakım Geçmişي", hStart: "Başlangıç", hEnd: "Bitiş", hDur: "Bakım Süresi", hStat: "Durum", hNote: "Not", noData: "Kayıt bulunamadى."
         }
     };
 
@@ -204,13 +199,11 @@
             document.getElementById('lockScreen').style.display = 'none';
             document.getElementById('mainWrapper').style.display = 'block';
             
-            // --- تعديل: سحب الكود من الرابط ---
             const urlParams = new URLSearchParams(window.location.search);
             const codeFromUrl = urlParams.get('code');
             if (codeFromUrl) {
                 document.getElementById('searchInput').value = codeFromUrl;
             }
-            // ---------------------------------
 
             init();
             sessionStorage.setItem('isAuth', 'true');
@@ -277,9 +270,6 @@
             <div class="stat-box ${currentStatusFilter==='stock'?'active-filter':''}" style="border-bottom:4px solid var(--stock)" onclick="setStatusFilter('stock')"><h3>${counts.stock}</h3><p>${translate('stock')}</p></div>
         `;
 
-        // =====================================================
-        // هنا التعديل الوحيد — typeStats ديناميكي من الشيت
-        // =====================================================
         const statsType = document.getElementById('typeStats');
         const typeColors = ['var(--singer)', 'var(--over)', 'var(--orlay)', 'var(--orange)', 'var(--green)', 'var(--primary)', '#06b6d4', '#8b5cf6'];
         const typeCounts = {};
@@ -295,7 +285,6 @@
                         <h3>${typeCounts[type]}</h3><p>${type}</p>
                     </div>`;
         }).join('');
-        // =====================================================
 
         filterData();
     }
@@ -316,10 +305,7 @@
             const diff = getDaysDiff(m["Next Maintenance"]);
             let mState = (diff !== null && diff <= 7) ? 'urgent' : (diff !== null && diff <= 15 ? 'soon' : 'safe');
 
-            // --- تعديل: مقارنة دقيقة تماماً لمنع تشابه الأرقام (مثل 1 و 10) ---
             let matchesSearch = query === '' || mCode === query;
-            // -------------------------------------------------------------
-            
             let matchesStatus = currentStatusFilter === 'all' || (currentStatusFilter === 'active' && mStat === 'active') || (currentStatusFilter === 'repair' && ['repair', 'down', 'أعطال'].includes(mStat)) || (currentStatusFilter === 'stock' && mStat === 'stock');
             const matchesType = currentTypeFilter === 'all' || mType.includes(currentTypeFilter.toLowerCase());
             const matchesMaint = maintF === 'all' || mState === maintF;
@@ -328,8 +314,6 @@
             if (matchesSearch && matchesStatus && matchesType && matchesMaint && matchesLine) {
                 const card = document.createElement('div');
                 card.className = `machine-card ${mState === 'urgent' ? 'urgent-glow' : ''}`;
-                
-                // لو في بحث برقم كود معين، خلّي الكارت مفتوح تلقائياً
                 if(query !== '') card.classList.add('expanded');
                 
                 card.onclick = (e) => { 
@@ -346,14 +330,12 @@
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <div><small style="color:var(--muted)">${translate(m.Type)}</small><h4 style="margin:2px 0">${m.Code}</h4></div>
+                        <div><small style="color:var(--muted)">${m.Type}</small><h4 style="margin:2px 0">${m.Code}</h4></div>
                         <span class="status-badge ${mStat === 'active' ? 'bg-active' : (['repair', 'down', 'أعطال'].includes(mStat) ? 'bg-repair' : 'bg-stock')}">${translate(mStat)}</span>
                     </div>
                     <div style="font-size:0.85rem; font-weight:600">${m.Model || ''}</div>
                     <div style="font-size:0.75rem; color:var(--muted); margin-top:4px"><i class="fas fa-map-marker-alt"></i> ${m.Location || '-'}</div>
-                    
                     ${diff !== null ? `<span class="days-badge ${daysCls}">${daysTxt}</span>` : ''}
-
                     <div class="card-body">
                         ${bodyContent}
                         <div class="maint-actions" id="actions-${m.Code}">
@@ -366,122 +348,117 @@
                         </div>
                         <div class="note-area" id="noteArea-${m.Code}">
                             <textarea id="noteInput-${m.Code}" placeholder="${translate('notePh')}"></textarea>
-
-```
-                        <button class="btn-done" onclick="submitMaintWithNote('${m.Code}', '${m.Location}', '${m.Type}', this)">
-                            ${translate('done')}
+                            <button class="btn-done" onclick="submitMaintWithNote('${m.Code}', '${m.Location}', '${m.Type}', this)">
+                                ${translate('done')}
+                            </button>
+                        </div>
+                        <button class="btn-history" onclick="showHistory('${m.Code}')">
+                            <i class="fas fa-history"></i> ${translate('historyBtn')}
                         </button>
+                        <button class="whatsapp-btn" onclick="sendWA(${JSON.stringify(m).replace(/"/g, '&quot;')})">
+                            <i class="fab fa-whatsapp"></i> ${translate('btnReport')}
+                        </button>
+                    </div>`;
+                grid.appendChild(card);
+            }
+        });
+    }
+
+    async function showHistory(code) {
+        const modal = document.getElementById('historyModal');
+        const list = document.getElementById('historyList');
+        document.getElementById('historyTitle').innerText = `${translate('historyBtn')} #${code}`;
+        list.innerHTML = '<div style="text-align:center; padding:30px;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>';
+        modal.style.display = 'block';
+
+        try {
+            const response = await fetch(HISTORY_URL);
+            const text = await response.text();
+            const rows = text.split('\n').map(r => r.split('","').map(c => c.replace(/"/g, '')));
+            const filtered = rows.slice(1).filter(row => row[0]?.trim() === code);
+
+            if(filtered.length === 0) {
+                list.innerHTML = `<p style="text-align:center; padding:20px; color:var(--muted);">${translate('noData')}</p>`;
+                return;
+            }
+
+            list.innerHTML = filtered.reverse().map(row => `
+                <div class="history-item">
+                    <div class="history-grid">
+                        <div><span class="hist-label">${translate('hStart')}</span><span class="hist-val">${row[3] || '-'}</span></div>
+                        <div><span class="hist-label">${translate('hEnd')}</span><span class="hist-val">${row[4] || '-'}</span></div>
+                        <div><span class="hist-label">${translate('hDur')}</span><span class="hist-val" style="color:var(--orange)">${row[5] || '-'}</span></div>
+                        <div><span class="hist-label">${translate('hStat')}</span><span class="hist-val">${row[6] || '-'}</span></div>
                     </div>
-                    <button class="btn-history" onclick="showHistory('${m.Code}')">
-                        <i class="fas fa-history"></i> ${translate('historyBtn')}
-                    </button>
-                    <button class="whatsapp-btn" onclick="sendWA(${JSON.stringify(m).replace(/"/g, '&quot;')})">
-                        <i class="fab fa-whatsapp"></i> ${translate('btnReport')}
-                    </button>
-                </div>`;
-            grid.appendChild(card);
-        }
-    });
-}
-
-async function showHistory(code) {
-    const modal = document.getElementById('historyModal');
-    const list = document.getElementById('historyList');
-    document.getElementById('historyTitle').innerText = `${translate('historyBtn')} #${code}`;
-    list.innerHTML = '<div style="text-align:center; padding:30px;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>';
-    modal.style.display = 'block';
-
-    try {
-        const response = await fetch(HISTORY_URL);
-        const text = await response.text();
-        const rows = text.split('\n').map(r => r.split('","').map(c => c.replace(/"/g, '')));
-        const filtered = rows.slice(1).filter(row => row[0]?.trim() === code);
-
-        if(filtered.length === 0) {
-            list.innerHTML = `<p style="text-align:center; padding:20px; color:var(--muted);">${translate('noData')}</p>`;
-            return;
-        }
-
-        list.innerHTML = filtered.reverse().map(row => `
-            <div class="history-item">
-                <div class="history-grid">
-                    <div><span class="hist-label">${translate('hStart')}</span><span class="hist-val">${row[3] || '-'}</span></div>
-                    <div><span class="hist-label">${translate('hEnd')}</span><span class="hist-val">${row[4] || '-'}</span></div>
-                    <div><span class="hist-label">${translate('hDur')}</span><span class="hist-val" style="color:var(--orange)">${row[5] || '-'}</span></div>
-                    <div><span class="hist-label">${translate('hStat')}</span><span class="hist-val">${row[6] || '-'}</span></div>
+                    <div style="margin-top:12px; padding-top:10px; border-top:1px solid #1e293b">
+                        <span class="hist-label">${translate('hNote')}</span>
+                        <p style="margin:5px 0 0; font-size:0.9rem; color:var(--muted)">${row[7] || '-'}</p>
+                    </div>
                 </div>
-                <div style="margin-top:12px; padding-top:10px; border-top:1px solid #1e293b">
-                    <span class="hist-label">${translate('hNote')}</span>
-                    <p style="margin:5px 0 0; font-size:0.9rem; color:var(--muted)">${row[7] || '-'}</p>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) { list.innerHTML = '<p style="text-align:center; color:var(--red);">Connection Error!</p>'; }
-}
+            `).join('');
+        } catch (e) { list.innerHTML = '<p style="text-align:center; color:var(--red);">Connection Error!</p>'; }
+    }
 
-function closeHistory() { document.getElementById('historyModal').style.display = 'none'; }
-window.onclick = (e) => { if(e.target == document.getElementById('historyModal')) closeHistory(); };
+    function closeHistory() { document.getElementById('historyModal').style.display = 'none'; }
+    window.onclick = (e) => { if(e.target == document.getElementById('historyModal')) closeHistory(); };
 
-function showNoteArea(code, loc, type, btn) {
-    document.getElementById(`actions-${code}`).style.display = 'none';
-    document.getElementById(`noteArea-${code}`).style.display = 'block';
-}
+    function showNoteArea(code, loc, type, btn) {
+        document.getElementById(`actions-${code}`).style.display = 'none';
+        document.getElementById(`noteArea-${code}`).style.display = 'block';
+    }
 
-async function submitMaintWithNote(code, loc, type, btn) {
-    const note = document.getElementById(`noteInput-${code}`).value;
-    const originalText = btn.innerHTML;
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ code, location: loc, type, action: 'finish', note: note }) });
-        alert("Success ✅");
-        document.getElementById(`noteArea-${code}`).style.display = 'none';
-        document.getElementById(`actions-${code}`).style.display = 'grid';
-    } catch (e) { alert("Error!"); }
-    finally { btn.disabled = false; btn.innerHTML = originalText; }
-}
+    async function submitMaintWithNote(code, loc, type, btn) {
+        const note = document.getElementById(`noteInput-${code}`).value;
+        const originalText = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        try {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ code, location: loc, type, action: 'finish', note: note }) });
+            alert("Success ✅");
+            document.getElementById(`noteArea-${code}`).style.display = 'none';
+            document.getElementById(`actions-${code}`).style.display = 'grid';
+        } catch (e) { alert("Error!"); }
+        finally { btn.disabled = false; btn.innerHTML = originalText; }
+    }
 
-async function handleMaint(code, loc, type, action, btn) {
-    const originalText = btn.innerHTML;
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ code, location: loc, type, action }) });
-        alert("Success ✅");
-    } catch (e) { alert("Error!"); }
-    finally { btn.disabled = false; btn.innerHTML = originalText; }
-}
+    async function handleMaint(code, loc, type, action, btn) {
+        const originalText = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        try {
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ code, location: loc, type, action }) });
+            alert("Success ✅");
+        } catch (e) { alert("Error!"); }
+        finally { btn.disabled = false; btn.innerHTML = originalText; }
+    }
 
-function sendWA(machine) {
-    const text = `🚨 *MAINTENANCE REQUEST*%0A%0A🆔 *Code:* ${machine.Code}%0A📍 *Location:* ${machine.Location || '-'}%0A⚙️ *Type:* ${machine.Type || '-'}%0A📦 *Model:* ${machine.Model || '-'}`;
-    window.open(`https://wa.me/${MAINTENANCE_PHONE}?text=${text}`, '_blank');
-}
+    function sendWA(machine) {
+        const text = `🚨 *MAINTENANCE REQUEST*%0A%0A🆔 *Code:* ${machine.Code}%0A📍 *Location:* ${machine.Location || '-'}%0A⚙️ *Type:* ${machine.Type || '-'}%0A📦 *Model:* ${machine.Model || '-'}`;
+        window.open(`https://wa.me/${MAINTENANCE_PHONE}?text=${text}`, '_blank');
+    }
 
-function setStatusFilter(s) { currentStatusFilter = s; updateUI(); }
-function setTypeFilter(t) { currentTypeFilter = currentTypeFilter === t ? 'all' : t; updateUI(); }
-function resetAllFilters() { currentStatusFilter = 'all'; currentTypeFilter = 'all'; document.getElementById('searchInput').value = ''; updateUI(); }
-function changeLang(l) { 
-    currentLang = l; 
-    document.getElementById('htmlPage').dir = l === 'ar' ? 'rtl' : 'ltr'; 
-    populateFilters();
-    updateUI(); 
-}
+    function setStatusFilter(s) { currentStatusFilter = s; updateUI(); }
+    function setTypeFilter(t) { currentTypeFilter = currentTypeFilter === t ? 'all' : t; updateUI(); }
+    function resetAllFilters() { currentStatusFilter = 'all'; currentTypeFilter = 'all'; document.getElementById('searchInput').value = ''; updateUI(); }
+    function changeLang(l) { 
+        currentLang = l; 
+        document.getElementById('htmlPage').dir = l === 'ar' ? 'rtl' : 'ltr'; 
+        populateFilters();
+        updateUI(); 
+    }
 
-// --- تعديل: عند فتح الصفحة، لو المستخدم مسجل  دخول، نفذ checkLogin عشان يسحب الكود من الرابط ---
-window.onload = () => { 
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasCode = urlParams.has('code');
+    window.onload = () => { 
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasCode = urlParams.has('code');
 
-    if(sessionStorage.getItem('isAuth') === 'true') { 
-        document.getElementById('lockScreen').style.display = 'none'; 
-        document.getElementById('mainWrapper').style.display = 'block'; 
-        
-        if(hasCode) {
-            document.getElementById('searchInput').value = urlParams.get('code');
-        }
-        init(); 
-    } 
-};
-```
-
+        if(sessionStorage.getItem('isAuth') === 'true') { 
+            document.getElementById('lockScreen').style.display = 'none'; 
+            document.getElementById('mainWrapper').style.display = 'block'; 
+            
+            if(hasCode) {
+                document.getElementById('searchInput').value = urlParams.get('code');
+            }
+            init(); 
+        } 
+    };
 </script>
 </body>
 </html>
