@@ -189,7 +189,7 @@
             btnReport: "WP Raporu Gönder", daysLeft: "{n} gün kaldı", daysLate: "{n} gün gecikti", today: "Bugün", 
             optAll: "Tümü", startM: "Başlat", finishM: "Bitir", search: "Kod ara...", allLines: "Tüm Hatlar", 
             urgent: "Acil 🚨", soon: "Yakında", safe: "Güvenli", done: "Tamam", notePh: "Özeti buraya yazın...", 
-            historyBtn: "Bakım Geçmişي", hStart: "Başlangıç", hEnd: "Bitiş", hDur: "Bakım Süresi", hStat: "Durum", hNote: "Not", noData: "Kayıt bulunamadى."
+            historyBtn: "Bakım Geçmişي", hStart: "Başlangıç", hEnd: "Bitiش", hDur: "Bakım Süresi", hStat: "Durum", hNote: "Not", noData: "Kayıt bulunamadى."
         }
     };
 
@@ -364,6 +364,15 @@
         });
     }
 
+    // وظيفة مساعدة لطرح 60 دقيقة من التاريخ
+    function subtractOneHour(dateString) {
+        if (!dateString || dateString === '-') return '-';
+        let date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        date.setMinutes(date.getMinutes() - 60);
+        return date.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
     async function showHistory(code) {
         const modal = document.getElementById('historyModal');
         const list = document.getElementById('historyList');
@@ -383,22 +392,27 @@
             }
 
             list.innerHTML = filtered.reverse().map(row => {
-                // منطق معالجة الوقت وتعديل فرق الساعة برمجياً
+                // تعديل أوقات البداية والنهاية بطرح ساعة (60 دقيقة)
+                let startTime = subtractOneHour(row[3]);
+                let endTime = subtractOneHour(row[4]);
+                
+                // إعادة حساب المدة بناءً على الأوقات المعدلة لضمان الدقة
                 let duration = row[5] || '-';
-                if(duration.includes('m')) {
-                    let totalMinutes = parseInt(duration);
-                    if(totalMinutes >= 60) {
-                        // إذا كانت المدة أكبر من ساعة (مثل 65 دقيقة) نقوم بطرح الساعة الزائدة الناتجة عن فرق التوقيت
-                        let actualMinutes = totalMinutes % 60;
-                        duration = actualMinutes + "m";
+                if (startTime !== '-' && endTime !== '-') {
+                    let startObj = new Date(startTime.replace(/(\d+)\/(\d+)\/(\d+),/, '$2/$1/$3'));
+                    let endObj = new Date(endTime.replace(/(\d+)\/(\d+)\/(\d+),/, '$2/$1/$3'));
+                    let diffMs = endObj - startObj;
+                    if (diffMs >= 0) {
+                        let diffMins = Math.floor(diffMs / 60000);
+                        duration = diffMins + "m";
                     }
                 }
 
                 return `
                 <div class="history-item">
                     <div class="history-grid">
-                        <div><span class="hist-label">${translate('hStart')}</span><span class="hist-val">${row[3] || '-'}</span></div>
-                        <div><span class="hist-label">${translate('hEnd')}</span><span class="hist-val">${row[4] || '-'}</span></div>
+                        <div><span class="hist-label">${translate('hStart')}</span><span class="hist-val">${startTime}</span></div>
+                        <div><span class="hist-label">${translate('hEnd')}</span><span class="hist-val">${endTime}</span></div>
                         <div><span class="hist-label">${translate('hDur')}</span><span class="hist-val" style="color:var(--orange)">${duration}</span></div>
                         <div><span class="hist-label">${translate('hStat')}</span><span class="hist-val">${row[6] || '-'}</span></div>
                     </div>
