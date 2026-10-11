@@ -1,445 +1,394 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-theme="dark">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RUBYRED – Employee Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rubyred | Management Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#07050A;--sf:#180D14;--sf2:#22121C;--bd:rgba(212,175,106,.18);--tx:#F7F0E8;--mu:#9C8A85;--ru:#C0002A;--ru2:#7A0020;--go:#D4AF6A;--em:#1FBE72;--am:#E6B528;--ease:cubic-bezier(.16,1,.3,1)}
-[data-theme=light]{--bg:#FAF6F1;--sf:#fff;--sf2:#F3EBE3;--bd:rgba(122,0,32,.16);--tx:#2A1218;--mu:#7A6A66;--go:#9A7424}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Cairo,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;background-image:radial-gradient(ellipse 70% 40% at 15% -10%,rgba(192,0,42,.2),transparent 65%),radial-gradient(ellipse 50% 40% at 100% 90%,rgba(212,175,106,.1),transparent 60%);background-attachment:fixed}
-[hidden]{display:none!important}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 32px;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(12px)}
-.logo{display:flex;align-items:center;gap:12px}.logo svg{width:36px;height:36px}
-.logo b{font-family:'Playfair Display',serif;font-size:1.35rem;letter-spacing:.08em;color:var(--go)}
-.logo small{display:block;font-size:.6rem;letter-spacing:.24em;color:var(--mu)}
-.hr{display:flex;gap:8px;align-items:center}
-.ib{background:transparent;border:1px solid var(--bd);color:var(--tx);border-radius:100px;padding:6px 14px;cursor:pointer;font:600 .75rem Cairo;transition:.25s}
-.ib:hover{border-color:var(--ru);color:var(--ru)}
-.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:22px}
-.auth{display:flex;justify-content:center;padding:48px 16px}.auth .card{width:100%;max-width:420px;padding:36px 32px}
-.tabs{display:flex;border:1px solid var(--bd);border-radius:6px;margin-bottom:24px;overflow:hidden}
-.tabs button,.nav button{flex:1;padding:11px;background:transparent;border:0;color:var(--mu);cursor:pointer;font:700 .85rem Cairo;transition:.3s}
-.tabs button.on,.nav button.on{background:linear-gradient(135deg,var(--ru),var(--ru2));color:#fff}
-h1,h2{font-family:'Playfair Display',serif}h2{font-size:1.4rem;margin-bottom:4px}
-.sub{color:var(--mu);font-size:.8rem;margin-bottom:18px}
-.f{margin-bottom:15px}.f label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--go);margin-bottom:6px}
-.f input,.f select,.f textarea{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font:.92rem Cairo;outline:0;transition:.25s}
-.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--ru);box-shadow:0 0 0 3px rgba(192,0,42,.15)}
-.f textarea{min-height:80px;resize:vertical}.f input[readonly]{opacity:.6}
-.pw{position:relative}.pw button{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:1rem}
-.btn{width:100%;padding:13px;border:0;border-radius:6px;cursor:pointer;color:#fff;font:700 .92rem Cairo;background:linear-gradient(135deg,var(--ru),var(--ru2));transition:.25s}
-.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(192,0,42,.4)}.btn:disabled{opacity:.5;transform:none;box-shadow:none;cursor:not-allowed}
-.btn.sm{width:auto;padding:9px 20px}
-.al{padding:11px 14px;border-radius:6px;margin-bottom:14px;font-size:.82rem;border-inline-start:3px solid var(--ru);background:rgba(192,0,42,.1);color:#FF8A9A}
-.al.ok{border-color:var(--em);background:rgba(31,190,114,.1);color:var(--em)}
-.dash{max-width:1000px;margin:0 auto;padding:28px 20px}
-.top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:22px}
-.nm{color:var(--go)}.top p{color:var(--mu);font-size:.82rem}
-.nav{display:flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:24px}
-h3{font-size:.72rem;letter-spacing:.2em;color:var(--go);margin:26px 0 14px;display:flex;align-items:center;gap:10px}h3:after{content:'';flex:1;height:1px;background:var(--bd)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.dc{position:relative;padding:18px 20px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;border-inline-start:3px solid var(--ru);animation:up .4s var(--ease) both}
-.dc .l{font-size:.64rem;letter-spacing:.14em;color:var(--mu);margin-bottom:6px}.dc .v{font-weight:600;word-break:break-word}
-.bal .big{font-size:2rem;font-weight:800;font-family:'Playfair Display',serif;color:var(--go)}
-.bar{height:6px;background:var(--sf2);border-radius:4px;margin:10px 0 6px;overflow:hidden;display:flex}.bar i{display:block;height:100%}
-.bar .u{background:var(--ru)}.bar .p{background:var(--am)}.bal small{color:var(--mu);font-size:.72rem}
-@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.bar2{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{padding:5px 13px;border-radius:100px;border:1px solid var(--bd);background:none;color:var(--mu);cursor:pointer;font:600 .74rem Cairo}
-.chip.on{background:var(--ru);border-color:var(--ru);color:#fff}
-.hi{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:16px 20px;margin-bottom:10px;border-inline-start:3px solid var(--am);animation:up .4s var(--ease) both}
-.hi.approved{border-inline-start-color:var(--em)}.hi.rejected{border-inline-start-color:var(--ru)}.hi.cancelled{border-inline-start-color:var(--mu);opacity:.7}
-.hi b{display:block}.hi small{color:var(--mu);font-size:.76rem;display:block;margin-top:3px}
-.st{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.pl{padding:4px 11px;border-radius:100px;font-size:.68rem;font-weight:700;border:1px solid}
-.pl.pending{color:var(--am);border-color:rgba(230,181,40,.4);background:rgba(230,181,40,.1)}
-.pl.approved{color:var(--em);border-color:rgba(31,190,114,.4);background:rgba(31,190,114,.1)}
-.pl.rejected{color:#FF6B84;border-color:rgba(192,0,42,.4);background:rgba(192,0,42,.1)}
-.pl.wait,.pl.cancelled{color:var(--mu);border-color:var(--bd)}
-.x{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:6px;padding:4px 10px;cursor:pointer;font:600 .7rem Cairo}.x:hover{color:var(--ru);border-color:var(--ru)}
-.empty{text-align:center;color:var(--mu);padding:30px;font-size:.85rem}
-.ov{position:fixed;inset:0;background:rgba(7,5,10,.85);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:.3s}
-.ov.open{opacity:1;pointer-events:all}
-.md{width:100%;max-width:560px;max-height:92vh;overflow:auto;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:26px;transform:translateY(30px);transition:.4s var(--ease)}.ov.open .md{transform:none}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
-.hint{font-size:.78rem;color:var(--go);margin:-6px 0 14px;min-height:1.1em}
-#toasts{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;width:92%;max-width:360px}
-.ts{background:var(--sf);border:1px solid var(--bd);border-inline-start:3px solid var(--em);padding:12px 16px;border-radius:6px;font-size:.84rem;box-shadow:0 12px 30px rgba(0,0,0,.4);animation:up .3s var(--ease)}.ts.er{border-inline-start-color:var(--ru)}
-.att{text-align:center;max-width:440px;margin:0 auto 10px}.clock{font:800 2.4rem 'Playfair Display',serif;color:var(--go)}
-.pbtn{width:168px;height:168px;border-radius:50%;border:0;color:#fff;cursor:pointer;font:800 1.05rem Cairo;margin:14px 0;background:linear-gradient(135deg,var(--ru),var(--ru2));box-shadow:0 0 0 8px rgba(192,0,42,.12),0 16px 40px rgba(192,0,42,.4);transition:.25s}
-.pbtn[data-t=out]{background:linear-gradient(135deg,#0f9d58,#0b6b3d);box-shadow:0 0 0 8px rgba(31,190,114,.12),0 16px 40px rgba(31,190,114,.35)}
-.pbtn:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}.pbtn:active{transform:scale(.96)}
-footer{text-align:center;color:var(--mu);font-size:.7rem;padding:22px}
-@media(max-width:600px){header{padding:12px 16px}.g2{grid-template-columns:1fr}.auth .card{padding:26px 20px}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:root{--bg:#150a0b;--bg2:#1e1012;--sf:#251215;--sfh:#2d151a;--bd:#3c1c20;--ac:#8f1d3a;--acb:#d1263f;--tx:#f3e7e5;--mu:#ac8b8e;--fa:#7a6265;--gold:#f0b429}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:'Tajawal','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:radial-gradient(1200px 500px at 15% -10%,rgba(143,29,58,.28),transparent 60%),var(--bg)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--acb);outline-offset:2px}
+.lang{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.lang button{background:transparent;border:0;color:var(--mu);font-size:13px;padding:7px 12px}
+.lang button+button{border-inline-start:1px solid var(--bd)}
+.lang button.active{background:var(--ac);color:#fff}
+/* splash + login */
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);text-align:center;transition:opacity .6s}
+#splash.out{opacity:0;pointer-events:none}
+.mark{font-size:46px;font-weight:900;opacity:0;transform:translateY(14px);animation:in .8s forwards}
+.mark span,.brand span{color:var(--acb)}
+.tag{margin-top:10px;color:var(--mu);opacity:0;animation:in .8s .25s forwards}
+.bar{margin-top:26px;width:160px;height:3px;background:var(--bd);border-radius:3px;overflow:hidden}
+.bar::after{content:"";display:block;height:100%;width:0;background:var(--acb);animation:bar 2.1s forwards}
+@keyframes in{to{opacity:1;transform:none}}@keyframes bar{to{width:100%}}
+#login{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px}
+#login.show{display:flex}
+.card{background:linear-gradient(135deg,var(--sf),var(--bg2));border:1px solid var(--bd);border-radius:16px}
+.lcard{width:100%;max-width:360px;padding:32px 28px}
+.ltop{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.brand{font-size:20px;font-weight:900}
+.fld{margin-bottom:16px}.fld label{display:block;font-size:13px;color:var(--mu);margin-bottom:6px}
+input,select{background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:15px;padding:10px 14px;border-radius:8px;outline:0;color-scheme:dark}
+.fld input{width:100%}
+input:focus,select:focus{border-color:var(--acb)}
+.btn{background:var(--ac);color:#fff;border:1px solid var(--bd);border-radius:8px;padding:10px 16px;font-size:14px;font-weight:700;white-space:nowrap;transition:background .2s,transform .15s}
+.btn:hover{background:var(--acb)}.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.lerr{color:var(--acb);font-size:13px;margin-top:12px;min-height:16px}
+.shake{animation:shake .35s}@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* shell */
+#app{display:none;direction:ltr}#app.show{display:flex}
+aside{position:fixed;left:0;top:0;bottom:0;width:250px;background:var(--bg2);border-right:1px solid var(--bd);padding:28px 16px;display:flex;flex-direction:column;gap:6px;z-index:20;transition:transform .3s}
+aside .brand{font-size:28px;padding:0 12px 4px}
+aside small{color:var(--fa);padding:0 12px 22px;display:block}
+.nav{display:flex;align-items:center;gap:12px;background:transparent;border:0;color:var(--mu);font-size:15px;font-weight:500;padding:12px 14px;border-radius:10px;text-align:start;position:relative;transition:background .2s,color .2s,padding .2s;direction:inherit}
+.nav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none}
+.nav:hover{background:var(--sf);color:var(--tx);padding-inline-start:18px}
+.nav.active{background:linear-gradient(90deg,var(--ac),rgba(143,29,58,.25));color:#fff}
+.nav.active::before{content:"";position:absolute;left:-16px;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--acb)}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding:0 4px}
+main{margin-left:250px;flex:1;min-width:0;padding:32px 36px 70px}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:26px;flex-wrap:wrap}
+.menu{display:none;padding:8px 12px}
+h1{margin:0;font-size:30px;font-weight:900;flex:1}
+h1 small{display:block;font-size:14px;color:var(--mu);font-weight:400;margin-top:2px}
+.view{display:none}.view.active{display:block;animation:view .5s ease}
+@keyframes view{from{opacity:0;transform:translateY(10px)}}
+.tools{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px}
+.tools .fld{margin:0;display:flex;flex-direction:column;gap:6px}.tools .fld label{margin:0}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;border:0;color:var(--mu);padding:10px 16px;font-size:14px}
+.seg button.active{background:var(--ac);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px}
+.kpi{padding:18px 20px;position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;inset-inline-end:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:rgba(209,38,63,.08)}
+.kpi b{display:block;font-size:34px;font-weight:900;color:var(--acb);line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi b.sm{font-size:22px;padding:7px 0}
+.kpi span{display:block;margin-top:6px;font-size:13px;color:var(--mu)}
+.kpi i{font-style:normal;font-size:12px;color:var(--fa)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-bottom:20px}
+.panel{padding:20px 22px;min-width:0}
+.panel h3{margin:0 0 14px;font-size:16px;font-weight:700}
+.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.chart{position:relative;height:270px}
+.tw{overflow-x:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{text-align:start;font-size:13px;font-weight:500;color:var(--fa);padding:12px 16px;border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:12px 16px;font-size:14px;border-bottom:1px solid var(--bd)}
+tbody tr:last-child td{border:0}tbody tr:hover{background:var(--sfh)}
+td.n{color:var(--mu);font-variant-numeric:tabular-nums}
+.share{display:flex;align-items:center;gap:10px}
+.share div{height:6px;border-radius:6px;background:linear-gradient(90deg,var(--ac),var(--acb));width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.msg{padding:30px;text-align:center;color:var(--mu)}.msg:empty{display:none}.msg.err{color:var(--acb)}
+.prog{height:3px;background:var(--bd);border-radius:3px;overflow:hidden;margin-bottom:18px;opacity:0;transition:opacity .3s}
+.prog.on{opacity:1}.prog div{height:100%;width:0;background:var(--acb);transition:width .3s}
+.note{color:var(--fa);font-size:13px;margin-inline-start:auto}
+@media(max-width:1000px){.c4,.c5,.c6,.c7,.c8{grid-column:span 12}}
+@media(max-width:820px){aside{transform:translateX(-100%)}aside.open{transform:none}main{margin-left:0;padding:20px 16px 60px}.menu{display:inline-block}h1{font-size:23px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
 </style>
 </head>
 <body>
-<div id="toasts"></div>
-<header>
-  <div class="logo">
-    <svg viewBox="0 0 100 100"><polygon points="50,4 90,38 50,52" fill="#D4AF6A"/><polygon points="50,4 10,38 50,52" fill="#F3D9A0"/><polygon points="10,38 50,52 18,96" fill="#7A0020"/><polygon points="90,38 50,52 82,96" fill="#C0002A"/><polygon points="18,96 50,52 82,96" fill="#FF2C4D"/></svg>
-    <div><b>RUBYRED</b><small data-i="sub"></small></div>
-  </div>
-  <div class="hr"><button class="ib" id="themeBtn" aria-label="Theme">◐</button><button class="ib" id="langBtn">AR</button></div>
-</header>
+<div id="splash"><div class="mark">Ruby<span>red</span></div><div class="tag" data-i18n="welcome">Management Dashboard</div><div class="bar"></div></div>
 
-<main class="auth" id="auth"><div class="card">
-  <div class="tabs"><button class="on" id="tL" data-i="tabLogin"></button><button id="tR" data-i="tabReg"></button></div>
-  <div class="al" id="aErr" hidden></div>
-  <div id="fL">
-    <h2 data-i="loginT"></h2><p class="sub" data-i="loginS"></p>
-    <div class="f"><label data-i="code"></label><input id="lC" autocomplete="username" inputmode="numeric"></div>
-    <div class="f"><label data-i="pass"></label><div class="pw"><input id="lP" type="password" autocomplete="current-password"><button type="button" data-eye="lP">👁</button></div></div>
-    <button class="btn" id="bL" data-i="loginBtn"></button>
-  </div>
-  <div id="fR" hidden>
-    <h2 data-i="regT"></h2><p class="sub" data-i="regS"></p>
-    <div class="f"><label data-i="code"></label><input id="rC" inputmode="numeric"></div>
-    <div class="f"><label data-i="pass"></label><div class="pw"><input id="rP" type="password" autocomplete="new-password"><button type="button" data-eye="rP">👁</button></div></div>
-    <div class="f"><label data-i="confirm"></label><input id="rP2" type="password" autocomplete="new-password"></div>
-    <button class="btn" id="bR" data-i="regBtn"></button>
-  </div>
-</div></main>
+<div id="login"><form class="card lcard" id="lform">
+  <div class="ltop"><div class="brand">Ruby<span>red</span></div><div class="lang" data-lang></div></div>
+  <div class="fld"><label data-i18n="uid">ID</label><input id="uid" autocomplete="username"></div>
+  <div class="fld"><label data-i18n="upw">Password</label><input id="upw" type="password" autocomplete="current-password"></div>
+  <button class="btn" style="width:100%" data-i18n="signin">Sign In</button><div class="lerr" id="lerr"></div>
+</form></div>
 
-<main class="dash" id="dash" hidden>
-  <div class="top"><div><h1 id="hello"></h1><p id="date"></p></div><button class="ib" id="bOut" data-i="signout"></button></div>
-  <div class="nav"><button class="on" data-tab="ov" data-i="nOv"></button><button data-tab="at" data-i="nAt"></button><button data-tab="lv" data-i="nLv"></button><button data-tab="ac" data-i="nAc"></button></div>
+<div id="app">
+<aside id="side">
+  <div class="brand">Ruby<span>red</span></div><small data-i18n="mgmt">Management Dashboard</small>
+  <button class="nav active" data-view="ov"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-5 3 3 5-7"/></svg><span data-i18n="navOv">Overview & Analytics</span></button>
+  <button class="nav" data-view="dy"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i18n="navDy">Daily Overtime</span></button>
+  <button class="nav" data-view="st"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-i18n="navSt">Saturday Overtime</span></button>
+  <div class="side-foot"><div class="lang" data-lang></div></div>
+</aside>
 
-  <section id="tab-ov">
-    <h3 data-i="balH"></h3><div class="grid" id="bal"></div>
-    <h3 data-i="dataH"></h3><div class="grid" id="cards"></div>
+<main id="main">
+  <div class="top"><button class="btn menu" id="menu">☰</button><h1><span id="vt"></span><small id="vs"></small></h1></div>
+
+  <!-- OVERVIEW -->
+  <section class="view active" id="v-ov">
+    <div class="tools">
+      <div class="seg" id="rng"><button data-n="7">7</button><button data-n="14">14</button><button data-n="30" class="active">30</button></div>
+      <span data-i18n="days" style="color:var(--mu);padding-bottom:10px">days</span>
+      <button class="btn" id="oExp" data-i18n="exportRep">Export report</button>
+      <span class="note" id="oNote"></span>
+    </div>
+    <div class="prog" id="oProg"><div></div></div>
+    <div class="kpis">
+      <div class="card kpi"><b id="oK1">—</b><span data-i18n="k1">Total overtime entries</span></div>
+      <div class="card kpi"><b id="oK2">—</b><span data-i18n="k2">Average per active day</span></div>
+      <div class="card kpi"><b id="oK3">—</b><span data-i18n="k3">Unique workers</span></div>
+      <div class="card kpi"><b class="sm" id="oK4">—</b><span data-i18n="k4">Peak day</span><i id="oK4s"></i></div>
+      <div class="card kpi"><b class="sm" id="oK5">—</b><span data-i18n="k5">Top department</span><i id="oK5s"></i></div>
+    </div>
+    <div class="grid">
+      <div class="card panel c8"><h3 data-i18n="chTrend">Daily overtime trend</h3><div class="chart"><canvas id="oTrend"></canvas></div></div>
+      <div class="card panel c4"><h3 data-i18n="chDept">By department</h3><div class="chart"><canvas id="oDept"></canvas></div></div>
+      <div class="card panel c6"><h3 data-i18n="chSat">Saturday overtime — last 8 weeks</h3><div class="chart"><canvas id="oSat"></canvas></div></div>
+      <div class="card panel c6"><h3 data-i18n="chWd">Average by weekday</h3><div class="chart"><canvas id="oWd"></canvas></div></div>
+      <div class="card panel c7"><h3 data-i18n="repDept">Department report</h3><div class="tw"><table><thead><tr><th data-i18n="tableDept">Department</th><th data-i18n="entries">Entries</th><th data-i18n="workers">Workers</th><th data-i18n="share">Share</th></tr></thead><tbody id="oDeptT"></tbody></table></div></div>
+      <div class="card panel c5"><h3 data-i18n="topW">Most frequent overtime workers</h3><div class="tw"><table><thead><tr><th data-i18n="tableName">Name</th><th data-i18n="tableDept">Department</th><th data-i18n="daysC">Days</th></tr></thead><tbody id="oTopT"></tbody></table></div></div>
+    </div>
+    <div class="msg" id="oMsg"></div>
   </section>
 
-  <section id="tab-at" hidden>
-    <div class="card att"><div id="clock" class="clock"></div><p class="sub" id="attSt"></p>
-      <button class="pbtn" id="punch"></button><p class="hint" id="attMsg" style="margin:10px 0 0;color:#FF8A9A"></p>
-      <p class="sub" data-i="locNote" style="margin:10px 0 0"></p></div>
-    <h3 data-i="monthH"></h3><div class="grid" id="attSum"></div>
-    <h3 data-i="logH"></h3><div id="attList"></div>
+  <!-- DAILY -->
+  <section class="view" id="v-dy">
+    <div class="tools">
+      <div class="fld"><label data-i18n="dateLabel">Date</label><input type="date" id="dDate"></div>
+      <div class="fld"><label data-i18n="departmentLabel">Department</label><select id="dDept"></select></div>
+      <button class="btn" id="dExp" data-i18n="downloadExcel">Download Excel</button>
+    </div>
+    <div id="dBox"></div>
   </section>
 
-  <section id="tab-lv" hidden>
-    <div class="bar2"><div class="chips" id="chips"></div>
-      <div class="hr"><button class="ib" id="bCsv" data-i="export"></button><button class="btn sm" id="bNew" data-i="newReq"></button></div></div>
-    <div id="hist"></div>
-  </section>
-
-  <section id="tab-ac" hidden>
-    <div class="card" style="max-width:440px"><h2 data-i="chPw"></h2><p class="sub" data-i="chPwS"></p>
-      <div class="al" id="cErr" hidden></div>
-      <div class="f"><label data-i="oldPw"></label><input id="pO" type="password" autocomplete="current-password"></div>
-      <div class="f"><label data-i="newPw"></label><input id="pN" type="password" autocomplete="new-password"></div>
-      <div class="f"><label data-i="confirm"></label><input id="pN2" type="password" autocomplete="new-password"></div>
-      <button class="btn" id="bPw" data-i="save"></button></div>
+  <!-- SATURDAY -->
+  <section class="view" id="v-st">
+    <div class="tools">
+      <div class="fld"><label data-i18n="saturdayLabel">Saturday</label><select id="sSat"></select></div>
+      <div class="fld"><label data-i18n="departmentLabel">Department</label><select id="sDept"></select></div>
+      <button class="btn" id="sExp" data-i18n="downloadExcel">Download Excel</button>
+      <span class="note" id="sNote"></span>
+    </div>
+    <div id="sBox"></div>
   </section>
 </main>
-
-<div class="ov" id="ov"><div class="md">
-  <h2 data-i="newReq"></h2><p class="sub" data-i="modalS"></p>
-  <div class="al" id="lvErr" hidden></div>
-  <div class="f"><label data-i="type"></label><select id="lvType"></select></div>
-  <div class="g2">
-    <div class="f"><label data-i="start"></label><input type="date" id="lvS"></div>
-    <div class="f"><label data-i="end"></label><input type="date" id="lvE"></div>
-  </div>
-  <div class="hint" id="lvHint"></div>
-  <div class="f"><label data-i="email"></label><input type="email" id="lvMail" placeholder="name@company.com"></div>
-  <div class="f"><label data-i="reason"></label><textarea id="lvReason"></textarea></div>
-  <div class="f"><label data-i="attach"></label><input type="file" id="lvFile" accept=".pdf,.jpg,.jpeg,.png,.docx"><div class="hint" style="margin:6px 0 0" data-i="attachHint"></div></div>
-  <div class="g2"><button class="ib" id="lvCancel" data-i="close" style="border-radius:6px"></button><button class="btn" id="lvSend" data-i="submit"></button></div>
-</div></div>
-<footer>© 2026 RUBYRED</footer>
+</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxljyjdIXZQVqZwLp-qPIgwey9QfBMFxW9diRhT6CNhRg7Zs-gCqCMK15RWQ8iJoWpA/exec";
-const MAX = 15 * 1024, POLL = 30000, IDLE = 15 * 60000;
-const TYPES = ["Annual", "Casual", "Unpaid", "Substitution"];
-const $ = id => document.getElementById(id);
-const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-let lang = "en", token = null, emp = {}, bal = {}, hist = [], filter = "all", poll, idle;
-try { token = sessionStorage.getItem("rr_t"); lang = localStorage.getItem("rr_l") || "en"; } catch (e) {}
+const API="https://script.google.com/macros/s/AKfycbwSOG_AKk-YxGM28bKLkF8nApDRoHSArzN3uDuZ7z4K2vxWTWBFuiUGbT47rVzKjqiC/exec";
+const CRED={id:"RUBYRED",password:"RUBYRED2006"};
+const PAL=['#d1263f','#f0b429','#e8794a','#8f1d3a','#c084a0','#6b7fd7','#3fb68b','#9a6fb0'];
 
-const T = {
-en: { title:"RUBYRED – Employee Portal", sub:"Employee Portal", tabLogin:"Sign In", tabReg:"Create Account", loginT:"Welcome back", loginS:"Enter your account details", regT:"Create Account", regS:"Enter your employee code and choose a password",
- code:"Employee Code", pass:"Password", confirm:"Confirm Password", loginBtn:"Sign In", regBtn:"Create Account", hello:"Welcome,", signout:"Sign Out",
- nOv:"Overview", nLv:"Leave", nAc:"Account", balH:"Leave Balance", dataH:"My Data", remaining:"days remaining", used:"Used", pending:"Pending", of:"of",
- Annual:"Annual", Casual:"Casual", Unpaid:"Unpaid", Substitution:"Substitution", newReq:"New Request", modalS:"Fill in the details to submit your request",
- type:"Leave Type", start:"Start Date", end:"End Date", email:"Email (for confirmation)", reason:"Reason", attach:"Attachment (optional)", attachHint:"PDF · JPG · PNG · DOCX — max 15 KB",
- submit:"Submit", close:"Close", days:"day(s)", all:"All", f_pending:"Pending", f_approved:"Approved", f_rejected:"Rejected", f_cancelled:"Cancelled", export:"Export CSV",
- none:"No leave requests", cancel:"Cancel", askCancel:"Cancel this request?", mgr:"Manager", hr:"HR", s_pending:"Pending", s_approved:"Approved", s_rejected:"Rejected", s_wait:"Waiting", s_cancelled:"Cancelled",
- fill:"Please fill in all required fields", mismatch:"Passwords do not match", short:"Password must be at least 6 characters", conn:"Connection error, try again", fileBig:"File is larger than 15 KB",
- dates:"End date must not be before start date", sent:"Leave request submitted", registered:"Account created, you can sign in now", chPw:"Change Password", chPwS:"Use a strong password you don't use elsewhere",
- oldPw:"Current Password", newPw:"New Password", save:"Save", pwDone:"Password changed", expired:"Session expired, please sign in again", cancelled:"Request cancelled", left:"balance left", noAtt:"Attachment",
- nAt:"Attendance", checkIn:"Check In", checkOut:"Check Out", doneToday:"Done for today", notYet:"You haven't checked in yet", presentDays:"Days present", lateMin:"Late minutes", late:"Late", onTime:"On time",
- noAtt2:"No attendance records this month", locating:"Getting your location...", locDenied:"Location permission denied. Allow location for this site in your browser settings.", locNo:"Your browser does not support location",
- locFail:"Could not get your location, enable GPS and try again", monthH:"This Month", logH:"Attendance Log", locNote:"You must be at the company location to check in or out", earlyMin:"Early minutes", overtimeMin:"Overtime minutes", early:"Early", overtime:"Overtime", leftEarly:"Left early" },
-ar: { title:"RUBYRED – بوابة الموظفين", sub:"بوابة الموظفين", tabLogin:"تسجيل الدخول", tabReg:"إنشاء حساب", loginT:"مرحباً بعودتك", loginS:"أدخل بيانات حسابك", regT:"إنشاء حساب", regS:"أدخل كود العامل واختر كلمة مرور",
- code:"كود العامل", pass:"كلمة المرور", confirm:"تأكيد كلمة المرور", loginBtn:"دخول", regBtn:"إنشاء الحساب", hello:"مرحباً،", signout:"تسجيل الخروج",
- nOv:"نظرة عامة", nLv:"الإجازات", nAc:"الحساب", balH:"رصيد الإجازات", dataH:"بياناتي", remaining:"يوم متبقي", used:"مستخدم", pending:"قيد المراجعة", of:"من",
- Annual:"سنوية", Casual:"عارضة", Unpaid:"بدون راتب", Substitution:"بدل", newReq:"طلب جديد", modalS:"أكمل البيانات لتقديم الطلب",
- type:"نوع الإجازة", start:"تاريخ البداية", end:"تاريخ النهاية", email:"البريد الإلكتروني (للتأكيد)", reason:"السبب", attach:"مرفق (اختياري)", attachHint:"PDF · JPG · PNG · DOCX — حد أقصى 15 كيلوبايت",
- submit:"إرسال", close:"إغلاق", days:"يوم", all:"الكل", f_pending:"قيد الانتظار", f_approved:"موافق عليها", f_rejected:"مرفوضة", f_cancelled:"ملغاة", export:"تصدير CSV",
- none:"لا توجد طلبات إجازة", cancel:"إلغاء", askCancel:"هل تريد إلغاء هذا الطلب؟", mgr:"المدير", hr:"الموارد البشرية", s_pending:"قيد الانتظار", s_approved:"موافقة", s_rejected:"رفض", s_wait:"بالانتظار", s_cancelled:"ملغاة",
- fill:"يرجى ملء الحقول المطلوبة", mismatch:"كلمتا المرور غير متطابقتين", short:"كلمة المرور 6 أحرف على الأقل", conn:"خطأ في الاتصال، حاول مجدداً", fileBig:"حجم الملف أكبر من 15 كيلوبايت",
- dates:"تاريخ النهاية قبل البداية", sent:"تم إرسال طلب الإجازة", registered:"تم إنشاء الحساب، يمكنك الدخول الآن", chPw:"تغيير كلمة المرور", chPwS:"استخدم كلمة مرور قوية لا تستخدمها في مكان آخر",
- oldPw:"كلمة المرور الحالية", newPw:"كلمة المرور الجديدة", save:"حفظ", pwDone:"تم تغيير كلمة المرور", expired:"انتهت الجلسة، سجّل الدخول مجدداً", cancelled:"تم إلغاء الطلب", left:"المتبقي", noAtt:"مرفق",
- nAt:"الحضور", checkIn:"تسجيل حضور", checkOut:"تسجيل انصراف", doneToday:"تم لهذا اليوم", notYet:"لم تسجل حضورك بعد", presentDays:"أيام الحضور", lateMin:"دقائق التأخير", late:"تأخير", onTime:"في الموعد",
- noAtt2:"لا توجد سجلات حضور هذا الشهر", locating:"جاري تحديد موقعك...", locDenied:"تم رفض إذن الموقع. اسمح بالموقع لهذا الموقع من إعدادات المتصفح.", locNo:"متصفحك لا يدعم تحديد الموقع",
- locFail:"تعذّر تحديد موقعك، فعّل GPS وحاول مجدداً", monthH:"هذا الشهر", logH:"سجل الحضور", locNote:"يجب أن تكون داخل موقع الشركة لتسجيل الحضور أو الانصراف", earlyMin:"دقائق الحضور المبكر", overtimeMin:"دقائق الإضافي", early:"مبكر", overtime:"إضافي", leftEarly:"انصراف مبكر" }
-};
-const t = k => (T[lang] && T[lang][k]) || T.en[k] || k;
+/* ---------- i18n ---------- */
+const T={
+en:{welcome:"Management Dashboard",uid:"ID",upw:"Password",signin:"Sign In",lerr:"Incorrect ID or password",mgmt:"Management Dashboard",navOv:"Overview & Analytics",navDy:"Daily Overtime",navSt:"Saturday Overtime",
+ tOv:"Overview & Analytics",sOv:"Executive summary of overtime",tDy:"Daily Overtime",sDy:"Workers registered on a selected day",tSt:"Saturday Overtime",sSt:"Registered on Thursday, or Wednesday if empty",
+ days:"days",exportRep:"Export report",k1:"Total overtime entries",k2:"Average per active day",k3:"Unique workers",k4:"Peak day",k5:"Top department",entriesS:"entries",
+ chTrend:"Daily overtime trend",chDept:"By department",chSat:"Saturday overtime — last 8 weeks",chWd:"Average by weekday",repDept:"Department report",topW:"Most frequent overtime workers",
+ entries:"Entries",workers:"Workers",share:"Share",daysC:"Days",tableCode:"Code",tableName:"Name",tableDept:"Department",tableJd:"JD",tableType:"Type",
+ dateLabel:"Date",saturdayLabel:"Saturday",departmentLabel:"Department",allDepartments:"All Departments",downloadExcel:"Download Excel",
+ dk1:"Workers on overtime",dk2:"Departments",dk3:"Overtime types",dk4:"Top department",cDept:"Workers by department",cType:"Workers by type",list:"Worker list",
+ loading:"Loading data...",noData:"No overtime registered for this selection",err:"Connection error. Check the Web App URL and deployment settings.",
+ loaded:"Loaded {a} of {b} days",srcThu:"Registered Thursday, {d}",srcWed:"Registered Wednesday, {d}",wd:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],avgW:"Average workers"},
+tr:{welcome:"Yönetim Paneli",uid:"Kullanıcı Adı",upw:"Şifre",signin:"Giriş Yap",lerr:"Kullanıcı adı veya şifre hatalı",mgmt:"Yönetim Paneli",navOv:"Genel Bakış ve Analiz",navDy:"Günlük Fazla Mesai",navSt:"Cumartesi Fazla Mesai",
+ tOv:"Genel Bakış ve Analiz",sOv:"Fazla mesai yönetici özeti",tDy:"Günlük Fazla Mesai",sDy:"Seçilen günde kayıtlı personel",tSt:"Cumartesi Fazla Mesai",sSt:"Perşembe, yoksa Çarşamba kaydı",
+ days:"gün",exportRep:"Raporu indir",k1:"Toplam fazla mesai kaydı",k2:"Aktif gün ortalaması",k3:"Tekil personel",k4:"En yoğun gün",k5:"En yoğun departman",entriesS:"kayıt",
+ chTrend:"Günlük fazla mesai trendi",chDept:"Departmana göre",chSat:"Cumartesi fazla mesai — son 8 hafta",chWd:"Güne göre ortalama",repDept:"Departman raporu",topW:"En sık fazla mesai yapanlar",
+ entries:"Kayıt",workers:"Personel",share:"Pay",daysC:"Gün",tableCode:"Kod",tableName:"İsim",tableDept:"Departman",tableJd:"Görev Tanımı",tableType:"Tür",
+ dateLabel:"Tarih",saturdayLabel:"Cumartesi",departmentLabel:"Departman",allDepartments:"Tüm Departmanlar",downloadExcel:"Excel İndir",
+ dk1:"Fazla mesai personeli",dk2:"Departman",dk3:"Mesai türü",dk4:"En yoğun departman",cDept:"Departmana göre personel",cType:"Türe göre personel",list:"Personel listesi",
+ loading:"Veriler yükleniyor...",noData:"Bu seçim için kayıt yok",err:"Bağlantı hatası. Web App bağlantısını kontrol edin.",
+ loaded:"{b} günün {a} tanesi yüklendi",srcThu:"Perşembe günü kaydedildi, {d}",srcWed:"Çarşamba günü kaydedildi, {d}",wd:["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"],avgW:"Ortalama personel"},
+ar:{welcome:"لوحة الإدارة",uid:"اسم المستخدم",upw:"كلمة المرور",signin:"دخول",lerr:"اسم المستخدم أو كلمة المرور غير صحيحة",mgmt:"لوحة الإدارة",navOv:"نظرة عامة وتحليلات",navDy:"العمل الإضافي اليومي",navSt:"العمل الإضافي يوم السبت",
+ tOv:"نظرة عامة وتحليلات",sOv:"ملخص تنفيذي للعمل الإضافي",tDy:"العمل الإضافي اليومي",sDy:"العمال المسجَّلون في اليوم المحدد",tSt:"العمل الإضافي يوم السبت",sSt:"التسجيل يوم الخميس، أو الأربعاء إن لم يوجد",
+ days:"يوم",exportRep:"تصدير التقرير",k1:"إجمالي تسجيلات العمل الإضافي",k2:"المتوسط لكل يوم عمل",k3:"عدد العمال (بدون تكرار)",k4:"أعلى يوم",k5:"أعلى قسم",entriesS:"تسجيل",
+ chTrend:"اتجاه العمل الإضافي اليومي",chDept:"حسب القسم",chSat:"العمل الإضافي يوم السبت — آخر 8 أسابيع",chWd:"المتوسط حسب اليوم",repDept:"تقرير الأقسام",topW:"أكثر العمال تسجيلًا للعمل الإضافي",
+ entries:"التسجيلات",workers:"العمال",share:"النسبة",daysC:"الأيام",tableCode:"الكود",tableName:"الاسم",tableDept:"القسم",tableJd:"المسمى الوظيفي",tableType:"النوع",
+ dateLabel:"التاريخ",saturdayLabel:"يوم السبت",departmentLabel:"القسم",allDepartments:"جميع الأقسام",downloadExcel:"تحميل إكسل",
+ dk1:"عمال العمل الإضافي",dk2:"الأقسام",dk3:"أنواع العمل الإضافي",dk4:"أعلى قسم",cDept:"العمال حسب القسم",cType:"العمال حسب النوع",list:"قائمة العمال",
+ loading:"جارٍ تحميل البيانات...",noData:"لا يوجد تسجيل للعمل الإضافي لهذا الاختيار",err:"خطأ في الاتصال. تأكد من رابط الـ Web App وإعدادات النشر.",
+ loaded:"تم تحميل {a} من {b} يوم",srcThu:"تم التسجيل يوم الخميس، {d}",srcWed:"تم التسجيل يوم الأربعاء، {d}",wd:["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"],avgW:"متوسط العمال"}};
+let L="en",cur="ov";
+const t=k=>T[L][k];
 
-// ── API ──
-async function api(p) {
-  const u = new URL(API);
-  Object.entries({ lang, token, ...p }).forEach(([k, v]) => { if (v !== undefined && v !== null) u.searchParams.set(k, v); });
-  const r = await (await fetch(u)).json();
-  if (r.sessionExpired) { logout(true); throw new Error("expired"); }
-  return r;
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const toS=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fromS=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const addD=(s,n)=>{const d=fromS(s);d.setDate(d.getDate()+n);return toS(d)};
+const fmt=s=>{const d=fromS(s);return`${["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`};
+const today=()=>toS(new Date());
+const nextSat=()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+((6-d.getDay()+7)%7));return toS(d)};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function tally(arr,key){const m={};arr.forEach(x=>{const k=x[key]||"—";m[k]=(m[k]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function countUp(el,to){const s=performance.now();(function f(n){const p=Math.min(1,(n-s)/800);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(s)}
+function setNum(id,v){const el=$(id);Number.isInteger(v)?countUp(el,v):el.textContent=v}
+
+/* ---------- data ---------- */
+const cache=new Map();
+async function fetchDay(d){
+  if(cache.has(d))return{w:cache.get(d)};
+  try{const j=await(await fetch(`${API}?date=${d}`)).json();
+    const w=j&&j.success&&Array.isArray(j.workers)?j.workers:[];cache.set(d,w);return{w}}
+  catch(e){return{w:[],err:true}}
 }
-function toast(msg, er) {
-  const e = document.createElement("div"); e.className = "ts" + (er ? " er" : ""); e.textContent = msg;
-  $("toasts").appendChild(e); setTimeout(() => e.remove(), 3600);
+async function pool(items,fn,n=6){let i=0;await Promise.all(Array.from({length:n},async()=>{while(i<items.length){const k=items[i++];await fn(k)}}))}
+async function satData(sat){
+  const thu=addD(sat,-2),wed=addD(sat,-3);
+  const a=await fetchDay(thu);if(a.w.length)return{w:a.w,src:"srcThu",date:thu};
+  const b=await fetchDay(wed);if(b.w.length)return{w:b.w,src:"srcWed",date:wed};
+  return{w:[],src:null,err:a.err||b.err};
 }
-function box(id, msg, ok) { const e = $(id); e.textContent = msg; e.className = "al" + (ok ? " ok" : ""); e.hidden = !msg; }
 
-// ── Language / theme ──
-function setLang(l) {
-  lang = l; document.documentElement.lang = l; document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
-  document.querySelectorAll("[data-i]").forEach(e => e.textContent = t(e.dataset.i));
-  $("langBtn").textContent = l === "ar" ? "EN" : "AR"; document.title = t("title");
-  fillTypes();
-  try { localStorage.setItem("rr_l", l); } catch (e) {}
-  if (token) renderAll();
+/* ---------- charts ---------- */
+Chart.defaults.color="#ac8b8e";Chart.defaults.font.family="Tajawal";
+Chart.defaults.borderColor="rgba(60,28,32,.7)";Chart.defaults.animation.duration=1100;Chart.defaults.animation.easing="easeOutQuart";
+const charts={};
+function chart(id,cfg){charts[id]?.destroy();cfg.options={responsive:true,maintainAspectRatio:false,...cfg.options};charts[id]=new Chart($(id),cfg)}
+const area=c=>{const g=c.getContext("2d").createLinearGradient(0,0,0,270);g.addColorStop(0,"rgba(209,38,63,.45)");g.addColorStop(1,"rgba(209,38,63,0)");return g};
+const noLegend={plugins:{legend:{display:false}}};
+function doughnut(id,e){chart(id,{type:"doughnut",data:{labels:e.map(x=>x[0]),datasets:[{data:e.map(x=>x[1]),backgroundColor:PAL,borderColor:"#1e1012",borderWidth:3}]},options:{cutout:"66%",plugins:{legend:{position:"bottom",labels:{boxWidth:10,padding:12}}}}})}
+function bars(id,labels,data,horiz){chart(id,{type:"bar",data:{labels,datasets:[{data,backgroundColor:"#d1263f",borderRadius:6,maxBarThickness:34}]},options:{indexAxis:horiz?"y":"x",...noLegend,scales:{[horiz?"x":"y"]:{beginAtZero:true,ticks:{precision:0}},[horiz?"y":"x"]:{grid:{display:false}}}}})}
+
+/* ---------- overview ---------- */
+let ovRange=30,ovToken=0,ovState=null;
+async function loadOverview(){
+  const tok=++ovToken,n=ovRange,end=today();
+  const dates=Array.from({length:n},(_,i)=>addD(end,-(n-1-i)));
+  const sats=Array.from({length:8},(_,i)=>addD(nextSat(),-7*(7-i)));
+  $("oMsg").textContent="";$("oMsg").className="msg";
+  const pr=$("oProg"),pb=pr.firstElementChild;pr.classList.add("on");pb.style.width="0";
+  let done=0,fails=0;const total=dates.length+sats.length;
+  const tick=()=>{pb.style.width=(++done/total*100)+"%"};
+  const days={},satRes={};
+  await pool(dates,async d=>{const r=await fetchDay(d);if(r.err)fails++;days[d]=r.w;tick()});
+  await pool(sats,async s=>{const r=await satData(s);if(r.err)fails++;satRes[s]=r.w.length;tick()},3);
+  if(tok!==ovToken)return;
+  setTimeout(()=>pr.classList.remove("on"),400);
+  if(fails>=dates.length){$("oMsg").textContent=t("err");$("oMsg").className="msg err"}
+  ovState={dates,days,sats,satRes};renderOverview();
 }
-$("langBtn").onclick = () => setLang(lang === "ar" ? "en" : "ar");
-$("themeBtn").onclick = () => {
-  const d = document.documentElement, n = d.dataset.theme === "dark" ? "light" : "dark"; d.dataset.theme = n;
-  try { localStorage.setItem("rr_th", n); } catch (e) {}
-};
-try { const th = localStorage.getItem("rr_th"); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
-document.querySelectorAll("[data-eye]").forEach(b => b.onclick = () => { const i = $(b.dataset.eye); i.type = i.type === "password" ? "text" : "password"; });
+function renderOverview(){
+  if(!ovState)return;const{dates,days,sats,satRes}=ovState;
+  const all=[];dates.forEach(d=>(days[d]||[]).forEach(w=>all.push({...w,_d:d})));
+  const counts=dates.map(d=>(days[d]||[]).length),active=counts.filter(c=>c>0).length;
+  const dEntries=tally(all,"department");
+  const people={};all.forEach(w=>{const k=w.code||w.name;(people[k]=people[k]||{name:w.name,dept:w.department,days:new Set()}).days.add(w._d)});
+  const pk=counts.indexOf(Math.max(...counts,0));
+  setNum("oK1",all.length);setNum("oK2",active?+(all.length/active).toFixed(1):0);setNum("oK3",Object.keys(people).length);
+  $("oK4").textContent=all.length?fmt(dates[pk]).replace(/, \d{4}/,""):"—";$("oK4s").textContent=all.length?`${counts[pk]} ${t("entriesS")}`:"";
+  $("oK5").textContent=dEntries[0]?dEntries[0][0]:"—";$("oK5s").textContent=dEntries[0]?`${dEntries[0][1]} ${t("entriesS")}`:"";
+  $("oNote").textContent=t("loaded").replace("{a}",active).replace("{b}",dates.length);
+  const tc=$("oTrend");
+  chart("oTrend",{type:"line",data:{labels:dates.map(d=>d.slice(5)),datasets:[{data:counts,borderColor:"#d1263f",backgroundColor:area(tc),fill:true,tension:.35,pointRadius:3,pointBackgroundColor:"#f0b429",borderWidth:2.5}]},options:{...noLegend,scales:{y:{beginAtZero:true,ticks:{precision:0}},x:{grid:{display:false},ticks:{maxTicksLimit:12}}}}});
+  doughnut("oDept",dEntries.slice(0,8));
+  bars("oSat",sats.map(s=>s.slice(5)),sats.map(s=>satRes[s]||0));
+  const wsum=Array(7).fill(0),wcnt=Array(7).fill(0);dates.forEach((d,i)=>{const w=fromS(d).getDay();wsum[w]+=counts[i];if(counts[i])wcnt[w]++});
+  const order=[6,0,1,2,3,4,5];
+  bars("oWd",order.map(i=>t("wd")[i]),order.map(i=>wcnt[i]?+(wsum[i]/wcnt[i]).toFixed(1):0));
+  const tot=all.length||1,mx=dEntries[0]?dEntries[0][1]:1;
+  $("oDeptT").innerHTML=dEntries.map(([d,c])=>{const u=new Set(all.filter(w=>(w.department||"—")===d).map(w=>w.code||w.name)).size;
+    return`<tr><td>${esc(d)}</td><td class="n">${c}</td><td class="n">${u}</td><td><div class="share"><div data-w="${c/mx*100}"></div><span class="n">${Math.round(c/tot*100)}%</span></div></td></tr>`}).join("");
+  const top=Object.values(people).sort((a,b)=>b.days.size-a.days.size).slice(0,8);
+  $("oTopT").innerHTML=top.map(p=>`<tr><td>${esc(p.name)}</td><td class="n">${esc(p.dept)}</td><td class="n">${p.days.size}</td></tr>`).join("");
+  requestAnimationFrame(()=>setTimeout(()=>document.querySelectorAll("#oDeptT .share div").forEach(b=>b.style.width=b.dataset.w+"%"),50));
+}
+function exportOverview(){
+  if(!ovState)return;const{dates,days}=ovState;
+  const wb=XLSX.utils.book_new(),all=[];dates.forEach(d=>(days[d]||[]).forEach(w=>all.push([d,w.code,w.name,w.department,w.jd,w.type])));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Date","Code","Name","Department","JD","Type"],...all]),"Details");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Date","Workers"],...dates.map(d=>[d,(days[d]||[]).length])]),"Daily");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Department","Entries"],...tally(all.map(r=>({d:r[3]})),"d")]),"Departments");
+  XLSX.writeFile(wb,`Rubyred_Overtime_Report_${today()}.xlsx`);
+}
 
-// ── Auth ──
-function tab(login) { $("fL").hidden = !login; $("fR").hidden = login; $("tL").classList.toggle("on", login); $("tR").classList.toggle("on", !login); box("aErr", ""); }
-$("tL").onclick = () => tab(true); $("tR").onclick = () => tab(false);
+/* ---------- daily / saturday detail ---------- */
+const S={d:{w:[]},s:{w:[]}};
+function boxHTML(p){return`
+<div class="kpis">
+ <div class="card kpi"><b id="${p}K1">—</b><span data-i18n="dk1">${t("dk1")}</span></div>
+ <div class="card kpi"><b id="${p}K2">—</b><span data-i18n="dk2">${t("dk2")}</span></div>
+ <div class="card kpi"><b id="${p}K3">—</b><span data-i18n="dk3">${t("dk3")}</span></div>
+ <div class="card kpi"><b class="sm" id="${p}K4">—</b><span data-i18n="dk4">${t("dk4")}</span></div>
+</div>
+<div class="grid">
+ <div class="card panel c6"><h3 data-i18n="cDept">${t("cDept")}</h3><div class="chart"><canvas id="${p}C1"></canvas></div></div>
+ <div class="card panel c6"><h3 data-i18n="cType">${t("cType")}</h3><div class="chart"><canvas id="${p}C2"></canvas></div></div>
+ <div class="card panel c12"><h3 data-i18n="list">${t("list")}</h3><div class="tw"><table><thead><tr><th data-i18n="tableCode">${t("tableCode")}</th><th data-i18n="tableName">${t("tableName")}</th><th data-i18n="tableDept">${t("tableDept")}</th><th data-i18n="tableJd">${t("tableJd")}</th><th data-i18n="tableType">${t("tableType")}</th></tr></thead><tbody id="${p}T"></tbody></table></div><div class="msg" id="${p}M"></div></div>
+</div>`}
+$("dBox").innerHTML=boxHTML("d");$("sBox").innerHTML=boxHTML("s");
 
-async function run(btn, fn) { btn.disabled = true; try { await fn(); } catch (e) { if (e.message !== "expired") throw e; } finally { btn.disabled = false; } }
+function fillDepts(p){
+  const sel=$(p+"Dept"),prev=sel.value,depts=[...new Set(S[p].w.map(w=>w.department).filter(Boolean))].sort();
+  sel.innerHTML=`<option value="">${t("allDepartments")}</option>`+depts.map(d=>`<option>${esc(d)}</option>`).join("");
+  sel.value=depts.includes(prev)?prev:"";
+}
+const rows=p=>{const v=$(p+"Dept").value;return v?S[p].w.filter(w=>w.department===v):S[p].w};
+function renderDetail(p,msgKey,isErr){
+  const r=rows(p),de=tally(r,"department"),ty=tally(r,"type");
+  setNum(p+"K1",r.length);setNum(p+"K2",de.length);setNum(p+"K3",ty.length);$(p+"K4").textContent=de[0]?`${de[0][0]} (${de[0][1]})`:"—";
+  doughnut(p+"C1",de.slice(0,8));doughnut(p+"C2",ty.slice(0,8));
+  $(p+"T").innerHTML=r.map(w=>`<tr><td class="n">${esc(w.code)}</td><td>${esc(w.name)}</td><td>${esc(w.department)}</td><td>${esc(w.jd)}</td><td>${esc(w.type)}</td></tr>`).join("");
+  const m=$(p+"M");m.textContent=!r.length?t(msgKey||"noData"):"";m.className="msg"+(isErr?" err":"");
+}
+let dTok=0,sTok=0;
+async function loadDaily(){
+  const tok=++dTok,d=$("dDate").value;S.d.w=[];$("dM").textContent=t("loading");
+  const r=await fetchDay(d);if(tok!==dTok)return;
+  S.d.w=r.w;fillDepts("d");renderDetail("d",r.err?"err":"noData",r.err);
+}
+let sSrc=null;
+function setSatNote(){$("sNote").textContent=sSrc?t(sSrc.k).replace("{d}",fmt(sSrc.d)):""}
+async function loadSat(){
+  const tok=++sTok,s=$("sSat").value;S.s.w=[];sSrc=null;setSatNote();$("sM").textContent=t("loading");
+  const r=await satData(s);if(tok!==sTok)return;
+  S.s.w=r.w;sSrc=r.src?{k:r.src,d:r.date}:null;setSatNote();fillDepts("s");renderDetail("s",r.err?"err":"noData",r.err);
+}
+function buildSats(sel){
+  const n=nextSat(),el=$("sSat");el.innerHTML="";
+  for(let i=1;i>=-12;i--){const d=addD(n,i*7),o=document.createElement("option");o.value=d;o.textContent=`${t("saturdayLabel")} — ${fmt(d)}`;el.appendChild(o)}
+  el.value=sel||n;
+}
+function dl(p,name,date){
+  const r=rows(p);if(!r.length)return;
+  const ws=XLSX.utils.aoa_to_sheet([[t("tableCode"),t("tableName"),t("tableDept"),t("tableJd"),t("tableType")],...r.map(w=>[w.code,w.name,w.department,w.jd,w.type])]);
+  ws["!cols"]=[{wch:12},{wch:24},{wch:18},{wch:24},{wch:14}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,name.slice(0,30));XLSX.writeFile(wb,`Rubyred_${name.replace(/ /g,"_")}_${date}.xlsx`);
+}
 
-$("bL").onclick = () => run($("bL"), async () => {
-  const code = $("lC").value.trim(), password = $("lP").value;
-  if (!code || !password) return box("aErr", t("fill"));
-  try {
-    const r = await api({ action: "login", code, password });
-    if (!r.success) return box("aErr", r.message);
-    token = r.token; try { sessionStorage.setItem("rr_t", token); } catch (e) {}
-    $("lP").value = ""; enter();
-  } catch (e) { if (e.message !== "expired") box("aErr", t("conn")); }
+/* ---------- navigation & language ---------- */
+function show(v){
+  cur=v;document.querySelectorAll(".view").forEach(e=>e.classList.toggle("active",e.id==="v-"+v));
+  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
+  $("vt").textContent=t("t"+v[0].toUpperCase()+v[1]);$("vs").textContent=t("s"+v[0].toUpperCase()+v[1]);
+  $("side").classList.remove("open");
+  if(v==="dy"&&!S.d.loaded){S.d.loaded=1;loadDaily()}
+  if(v==="st"&&!S.s.loaded){S.s.loaded=1;loadSat()}
+  Object.values(charts).forEach(c=>c.resize());
+}
+function applyLang(l){
+  L=l;document.documentElement.lang=l;$("main").dir=l==="ar"?"rtl":"ltr";document.querySelector("#login").dir=l==="ar"?"rtl":"ltr";document.querySelector("aside").dir=l==="ar"?"rtl":"ltr";
+  document.title="Rubyred | "+t("mgmt");
+  document.querySelectorAll("[data-i18n]").forEach(e=>{if(t(e.dataset.i18n)!==undefined)e.textContent=t(e.dataset.i18n)});
+  document.querySelectorAll("[data-lang] button").forEach(b=>b.classList.toggle("active",b.dataset.l===l));
+  ["d","s"].forEach(p=>{const sel=$(p+"Dept"),v=sel.value;fillDepts(p);sel.value=v;});
+  if($("app").classList.contains("show")){buildSats($("sSat").value);setSatNote();show(cur);renderOverview();["d","s"].forEach(p=>S[p].loaded&&renderDetail(p))}
+}
+document.querySelectorAll("[data-lang]").forEach(g=>{["en","tr","ar"].forEach(l=>{const b=document.createElement("button");b.type="button";b.dataset.l=l;b.textContent=l.toUpperCase();b.onclick=()=>applyLang(l);g.appendChild(b)})});
+
+/* ---------- start ---------- */
+window.addEventListener("load",()=>setTimeout(()=>{$("splash").classList.add("out");setTimeout(()=>{$("splash").style.display="none";$("login").classList.add("show")},600)},2200));
+$("lform").addEventListener("submit",e=>{
+  e.preventDefault();
+  if($("uid").value.trim()===CRED.id&&$("upw").value===CRED.password){
+    $("login").classList.remove("show");$("app").classList.add("show");init();
+  }else{$("lerr").textContent=t("lerr");const c=document.querySelector(".lcard");c.classList.remove("shake");void c.offsetWidth;c.classList.add("shake")}
 });
-$("bR").onclick = () => run($("bR"), async () => {
-  const code = $("rC").value.trim(), password = $("rP").value;
-  if (!code || !password) return box("aErr", t("fill"));
-  if (password !== $("rP2").value) return box("aErr", t("mismatch"));
-  if (password.length < 6) return box("aErr", t("short"));
-  try {
-    const r = await api({ action: "register", code, password });
-    if (!r.success) return box("aErr", r.message);
-    tab(true); box("aErr", t("registered"), true); $("lC").value = code;
-  } catch (e) { box("aErr", t("conn")); }
-});
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeModal();
-  if (e.key === "Enter" && !token && e.target.tagName === "INPUT") ($("fL").hidden ? $("bR") : $("bL")).click();
-});
-
-function enter() {
-  $("auth").hidden = true; $("dash").hidden = false; showTab("ov"); loadAll(); loadAtt(); startClock(); startPoll(); resetIdle();
+function init(){
+  $("dDate").value=today();buildSats(nextSat());
+  document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>show(b.dataset.view));
+  $("menu").onclick=()=>$("side").classList.toggle("open");
+  $("rng").onclick=e=>{const b=e.target.closest("button");if(!b)return;document.querySelectorAll("#rng button").forEach(x=>x.classList.toggle("active",x===b));ovRange=+b.dataset.n;loadOverview()};
+  $("oExp").onclick=exportOverview;
+  $("dDate").onchange=loadDaily;$("dDept").onchange=()=>renderDetail("d");$("dExp").onclick=()=>dl("d","Daily Overtime",$("dDate").value);
+  $("sSat").onchange=loadSat;$("sDept").onchange=()=>renderDetail("s");$("sExp").onclick=()=>dl("s","Saturday Overtime",$("sSat").value);
+  applyLang(L);loadOverview();
 }
-async function logout(expired) {
-  if (token && !expired) { try { await api({ action: "logout" }); } catch (e) {} }
-  token = null; emp = {}; bal = {}; hist = []; att = null; clearInterval(poll); clearInterval(clk); clearTimeout(idle);
-  try { sessionStorage.removeItem("rr_t"); } catch (e) {}
-  $("dash").hidden = true; $("auth").hidden = false; closeModal();
-  if (expired) toast(t("expired"), true);
-}
-$("bOut").onclick = () => logout(false);
-function resetIdle() { clearTimeout(idle); if (token) idle = setTimeout(() => logout(true), IDLE); }
-["click", "keydown", "touchstart"].forEach(ev => document.addEventListener(ev, resetIdle, { passive: true }));
-
-// ── Data ──
-async function loadAll() {
-  try {
-    const [e, b, h] = await Promise.all([api({ action: "getEmployeeData" }), api({ action: "getLeaveBalance" }), api({ action: "getLeaveHistory" })]);
-    if (e.success) emp = e.data; if (b.success) bal = b.data; if (h.success) hist = h.data;
-    renderAll();
-  } catch (e) { if (e.message !== "expired") toast(t("conn"), true); }
-}
-async function refresh() {
-  if (!token || document.hidden) return;
-  try {
-    const [b, h] = await Promise.all([api({ action: "getLeaveBalance" }), api({ action: "getLeaveHistory" })]);
-    if (b.success) bal = b.data; if (h.success) hist = h.data; renderBal(); renderHist();
-  } catch (e) {}
-}
-function startPoll() { clearInterval(poll); poll = setInterval(refresh, POLL); }
-document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
-
-// ── Render ──
-function renderAll() { renderHello(); renderBal(); renderCards(); renderChips(); renderHist(); renderAtt(); }
-function renderHello() {
-  const name = Object.values(emp)[1] || "";
-  $("hello").innerHTML = t("hello") + ' <span class="nm">' + esc(name) + "</span>";
-  $("date").textContent = new Date().toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-}
-function renderCards() {
-  const en = Object.entries(emp).slice(1);
-  $("cards").innerHTML = en.map(([k, v], i) => `<div class="dc" style="animation-delay:${i * 40}ms"><div class="l">${esc(k)}</div><div class="v">${esc(v === "" ? "—" : v)}</div></div>`).join("");
-}
-function renderBal() {
-  $("bal").innerHTML = Object.keys(bal).map(k => {
-    const b = bal[k], up = b.quota ? Math.min(100, b.used / b.quota * 100) : 0, pp = b.quota ? Math.min(100 - up, b.pending / b.quota * 100) : 0;
-    return `<div class="dc bal"><div class="l">${esc(t(k))}</div><div class="big">${b.remaining}</div><small>${t("remaining")} · ${t("of")} ${b.quota}</small>
-      <div class="bar"><i class="u" style="width:${up}%"></i><i class="p" style="width:${pp}%"></i></div><small>${t("used")}: ${b.used} · ${t("pending")}: ${b.pending}</small></div>`;
-  }).join("");
-}
-function stage(s) {
-  s = String(s || "").toLowerCase();
-  if (s.includes("cancel")) return { o: "cancelled" };
-  const ap = s.includes("approved");
-  if (s.includes("by hr")) return { m: "approved", h: ap ? "approved" : "rejected", o: ap ? "approved" : "rejected" };
-  if (s.includes("by manager")) return ap ? { m: "approved", h: "pending", o: "pending" } : { m: "rejected", h: "wait", o: "rejected" };
-  return { m: "pending", h: "wait", o: "pending" };
-}
-function renderChips() {
-  $("chips").innerHTML = ["all", "pending", "approved", "rejected", "cancelled"].map(f => `<button class="chip${filter === f ? " on" : ""}" data-f="${f}">${t(f === "all" ? "all" : "f_" + f)}</button>`).join("");
-  $("chips").querySelectorAll(".chip").forEach(c => c.onclick = () => { filter = c.dataset.f; renderChips(); renderHist(); });
-}
-function renderHist() {
-  const rows = hist.slice().reverse().filter(r => filter === "all" || stage(r.status).o === filter);
-  if (!rows.length) { $("hist").innerHTML = `<div class="empty">${t("none")}</div>`; return; }
-  $("hist").innerHTML = rows.map((r, i) => {
-    const s = stage(r.status), pill = (st, who) => `<span class="pl ${st}">${t(who)}: ${t("s_" + st)}</span>`;
-    const stat = s.o === "cancelled" ? `<span class="pl cancelled">${t("s_cancelled")}</span>` : pill(s.m, "mgr") + "›" + pill(s.h, "hr");
-    return `<div class="hi ${s.o}" style="animation-delay:${Math.min(i, 8) * 40}ms"><div><b>${esc(t(r.leaveType) || r.leaveType)}</b>
-      <small>${esc(r.startDate)} → ${esc(r.endDate)} · ${r.days || 0} ${t("days")}</small>
-      ${r.reason ? `<small>${esc(r.reason)}</small>` : ""}${r.attachmentName ? `<small>📎 ${esc(r.attachmentName)}</small>` : ""}</div>
-      <div class="st">${stat}${r.status === "Pending" ? `<button class="x" data-c="${r.id}">${t("cancel")}</button>` : ""}</div></div>`;
-  }).join("");
-  $("hist").querySelectorAll("[data-c]").forEach(b => b.onclick = async () => {
-    if (!confirm(t("askCancel"))) return;
-    try { const r = await api({ action: "cancelLeave", row: b.dataset.c }); toast(r.message, !r.success); refresh(); } catch (e) {}
-  });
-}
-
-// ── Tabs ──
-function showTab(id) {
-  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === id));
-  ["ov", "at", "lv", "ac"].forEach(x => $("tab-" + x).hidden = x !== id);
-}
-document.querySelectorAll(".nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
-
-// ── CSV export ──
-$("bCsv").onclick = () => {
-  const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
-  const csv = "\uFEFF" + [["Type", "Start", "End", "Days", "Status", "Reason"], ...hist.map(r => [r.leaveType, r.startDate, r.endDate, r.days, r.status, r.reason])].map(r => r.map(q).join(",")).join("\n");
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  a.download = "leave-history.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-};
-
-// ── Leave modal ──
-function fillTypes() {
-  const s = $("lvType"), v = s.value;
-  s.innerHTML = `<option value="" disabled>—</option>` + TYPES.map(k => `<option value="${k}">${t(k)}</option>`).join(""); s.value = v || "";
-}
-function openModal() {
-  ["lvType", "lvS", "lvE", "lvMail", "lvReason", "lvFile"].forEach(i => $(i).value = ""); box("lvErr", ""); $("lvHint").textContent = "";
-  $("ov").classList.add("open"); document.body.style.overflow = "hidden";
-}
-function closeModal() { $("ov").classList.remove("open"); document.body.style.overflow = ""; }
-$("bNew").onclick = openModal; $("lvCancel").onclick = closeModal; $("ov").onclick = e => { if (e.target === $("ov")) closeModal(); };
-
-function hint() {
-  const s = $("lvS").value, e = $("lvE").value, ty = $("lvType").value;
-  if (!s || !e) return ($("lvHint").textContent = "");
-  const d = Math.round((new Date(e) - new Date(s)) / 864e5) + 1;
-  if (d < 1) return ($("lvHint").textContent = t("dates"));
-  const b = bal[ty]; $("lvHint").textContent = d + " " + t("days") + (b ? ` · ${t("left")}: ${b.remaining}` : "");
-}
-["lvS", "lvE", "lvType"].forEach(i => $(i).onchange = hint);
-$("lvFile").onchange = () => { const f = $("lvFile").files[0]; if (f && f.size > MAX) { box("lvErr", t("fileBig")); $("lvFile").value = ""; } else box("lvErr", ""); };
-const b64 = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1] || ""); r.onerror = no; r.readAsDataURL(f); });
-
-$("lvSend").onclick = () => run($("lvSend"), async () => {
-  const ty = $("lvType").value, s = $("lvS").value, e = $("lvE").value, f = $("lvFile").files[0];
-  if (!ty || !s || !e) return box("lvErr", t("fill"));
-  if (e < s) return box("lvErr", t("dates"));
-  if (f && f.size > MAX) return box("lvErr", t("fileBig"));
-  try {
-    const r = await api({ action: "submitLeave", leaveType: ty, startDate: s, endDate: e, email: $("lvMail").value.trim(), reason: $("lvReason").value.trim(),
-      attachmentName: f ? f.name : "", attachmentData: f ? await b64(f) : "" });
-    if (!r.success) return box("lvErr", r.message);
-    closeModal(); toast(t("sent")); if (r.balance) bal = r.balance; refresh(); showTab("lv");
-  } catch (er) { if (er.message !== "expired") box("lvErr", t("conn")); }
-});
-
-// ── Change password ──
-$("bPw").onclick = () => run($("bPw"), async () => {
-  const o = $("pO").value, n = $("pN").value;
-  if (!o || !n) return box("cErr", t("fill"));
-  if (n !== $("pN2").value) return box("cErr", t("mismatch"));
-  if (n.length < 6) return box("cErr", t("short"));
-  try {
-    const r = await api({ action: "changePassword", oldPassword: o, newPassword: n });
-    box("cErr", r.message, r.success); if (r.success) { ["pO", "pN", "pN2"].forEach(i => $(i).value = ""); toast(t("pwDone")); }
-  } catch (er) { if (er.message !== "expired") box("cErr", t("conn")); }
-});
-
-// ── Attendance (GPS) ──
-let att = null, clk;
-const getPos = () => new Promise((ok, no) => {
-  if (!navigator.geolocation) return no({ code: -1 });
-  navigator.geolocation.getCurrentPosition(ok, no, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
-});
-function startClock() {
-  clearInterval(clk);
-  const f = () => { $("clock").textContent = new Date().toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-GB"); };
-  f(); clk = setInterval(f, 1000);
-}
-async function loadAtt() {
-  try { const r = await api({ action: "getAttendance" }); if (r.success) { att = r.data; renderAtt(); } } catch (e) {}
-}
-function renderAtt() {
-  if (!att) return;
-  const td = att.today, b = $("punch"), st = !td ? "in" : (!td.out ? "out" : "done");
-  b.dataset.t = st; b.disabled = st === "done";
-  b.textContent = t(st === "in" ? "checkIn" : st === "out" ? "checkOut" : "doneToday");
-  $("attSt").textContent = td ? t("checkIn") + ": " + td.in + (td.out ? " · " + t("checkOut") + ": " + td.out : "") : t("notYet");
-  $("attSum").innerHTML = `<div class="dc"><div class="l">${t("presentDays")}</div><div class="v">${att.presentDays}</div></div><div class="dc"><div class="l">${t("lateMin")}</div><div class="v">${att.lateMin}</div></div><div class="dc"><div class="l">${t("earlyMin")}</div><div class="v">${att.earlyMin}</div></div><div class="dc"><div class="l">${t("overtimeMin")}</div><div class="v">${att.overtimeMin}</div></div>`;
-  $("attList").innerHTML = att.month.map(r => `<div class="hi ${r.late ? "" : "approved"}"><div><b>${esc(r.date)}</b><small>${esc(r.in)} → ${esc(r.out || "—")}${r.overtime ? " · " + t("overtime") + " " + r.overtime + "′" : ""}${r.leftEarly ? " · " + t("leftEarly") + " " + r.leftEarly + "′" : ""}</small></div>` +
-    (r.late ? `<span class="pl pending">${t("late")} ${r.late}′</span>` : r.early ? `<span class="pl approved">${t("early")} ${r.early}′</span>` : `<span class="pl approved">${t("onTime")}</span>`) + `</div>`).join("") || `<div class="empty">${t("noAtt2")}</div>`;
-}
-$("punch").onclick = async () => {
-  await run($("punch"), async () => {
-    const type = $("punch").dataset.t; $("attMsg").textContent = t("locating");
-    let p;
-    try { p = await getPos(); } catch (e) { $("attMsg").textContent = t(e.code === 1 ? "locDenied" : e.code === -1 ? "locNo" : "locFail"); return; }
-    try {
-      const r = await api({ action: "punch", type, lat: p.coords.latitude, lng: p.coords.longitude, acc: Math.round(p.coords.accuracy) });
-      $("attMsg").textContent = r.success ? "" : r.message + (r.distance ? " (" + r.distance + " m)" : "");
-      if (r.success) toast(r.message + " · " + r.time);
-      await loadAtt();
-    } catch (e) { if (e.message !== "expired") $("attMsg").textContent = t("conn"); }
-  });
-  renderAtt();
-};
-
-// ── Init ──
-setLang(lang);
-if (token) enter();
+applyLang("en");
 </script>
 </body>
 </html>
