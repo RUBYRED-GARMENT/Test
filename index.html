@@ -124,6 +124,7 @@
         #reasonCancelBtn { background:#333; color:#aaa; }
         #reasonSendBtn { background:#6a1b9a; color:#fff; }
         #reasonErr { margin-top:10px; font-size:12px; color:#ff6666; display:none; }
+        #reasonServerErr { margin-top:10px; font-size:12px; color:#ff6666; display:none; word-break:break-word; line-height:1.5; }
 
         /* ── History section ── */
         .history-wrap { margin-top: 24px; border-top: 1px solid #262626; padding-top: 16px; }
@@ -293,6 +294,7 @@
             <textarea id="reasonInp" data-i18n-ph="reasonPlaceholder" placeholder="e.g. Urgent shipment deadline for order #..."></textarea>
         </div>
         <div id="reasonErr" data-i18n="reasonRequiredErr">Please write a reason before sending</div>
+        <div id="reasonServerErr"></div>
         <div class="modal-actions">
             <button class="btn" id="reasonCancelBtn" onclick="closeReasonModal()" data-i18n="cancelBtn">Cancel</button>
             <button class="btn" id="reasonSendBtn" onclick="confirmSendApproval()" data-i18n="sendBtn">Send</button>
@@ -502,8 +504,8 @@ function setLang(lang, skipFade) {
 }
 
 // ===== TIME GATE =====
-var OPEN_H  = 7;
-var CLOSE_H = 23;
+var OPEN_H  = 11;
+var CLOSE_H = 17;
 var appUnlocked = false;
 
 function getNowSec() {
@@ -570,9 +572,9 @@ function doLogin() {
 }
 
 // ===== API =====
-var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbz4YqnoNiNC5igCTk4QuSfD0ZWRV-6r86TEL0zFzputP4ueiCp40lSd703VjPe_0abg/exec";
-var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbz4YqnoNiNC5igCTk4QuSfD0ZWRV-6r86TEL0zFzputP4ueiCp40lSd703VjPe_0abg/exec";
-var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbz4YqnoNiNC5igCTk4QuSfD0ZWRV-6r86TEL0zFzputP4ueiCp40lSd703VjPe_0abg/exec";
+var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbzZi2JlJ3eatTu9jgMugle4ydHM3eHognvlf7xTEIsH0bpflkx6LGvp7KTFzV9GGnnR/exec";
+var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbzZi2JlJ3eatTu9jgMugle4ydHM3eHognvlf7xTEIsH0bpflkx6LGvp7KTFzV9GGnnR/exec";
+var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbzZi2JlJ3eatTu9jgMugle4ydHM3eHognvlf7xTEIsH0bpflkx6LGvp7KTFzV9GGnnR/exec";
 
 var currentMode = 'normal';
 var MODE_COLORS = { normal: '#2e7d32', saturday: '#1565c0', holiday: '#6a1b9a' };
@@ -931,6 +933,7 @@ function formatRegTime(raw) {
 function openReasonModal() {
     document.getElementById('reasonInp').value = '';
     document.getElementById('reasonErr').style.display = 'none';
+    document.getElementById('reasonServerErr').style.display = 'none';
     document.getElementById('reasonModal').classList.add('open');
     setTimeout(function(){ document.getElementById('reasonInp').focus(); }, 100);
 }
@@ -944,6 +947,8 @@ function handleReasonOverlayClick(e) {
 async function confirmSendApproval() {
     var reason = document.getElementById('reasonInp').value.trim();
     var errEl  = document.getElementById('reasonErr');
+    var srvEl  = document.getElementById('reasonServerErr');
+    srvEl.style.display = 'none';
     if (!reason) { errEl.style.display = 'block'; return; }
     errEl.style.display = 'none';
 
@@ -953,7 +958,7 @@ async function confirmSendApproval() {
     sendBtn.textContent = t('sendingBtn');
 
     try {
-        var ctrl=new AbortController(), timer=setTimeout(function(){ ctrl.abort(); },15000);
+        var ctrl=new AbortController(), timer=setTimeout(function(){ ctrl.abort(); },40000);
         var url = getApiUrl(currentMode) + '?action=sendApprovalBatch&reason=' + encodeURIComponent(reason);
         var res = await fetch(url, { signal: ctrl.signal });
         clearTimeout(timer);
@@ -969,10 +974,13 @@ async function confirmSendApproval() {
         } else if (data.status === 'missing_reason') {
             errEl.style.display = 'block';
         } else {
-            showApprovalMsg(t('approvalError'), 'error');
+            // نعرض سبب الفشل الحقيقي جوه المودال (مثلاً: مفيش صلاحية إرسال إيميل)
+            srvEl.textContent = t('approvalError') + (data.message ? ' \u2014 ' + data.message : '');
+            srvEl.style.display = 'block';
         }
     } catch (e) {
-        showApprovalMsg(t('approvalConnErr'), 'error');
+        srvEl.textContent = t('approvalConnErr');
+        srvEl.style.display = 'block';
     } finally {
         sendBtn.disabled = false;
         sendBtn.textContent = orig;
@@ -980,17 +988,22 @@ async function confirmSendApproval() {
 }
 
 // ===== APPROVAL HISTORY (polling) =====
+var HISTORY_POLL_MS = 5000; // كل كام ملي ثانية نحدّث الـ History
 var historyPollInterval = null;
 var lastHistoryList = [];
 
 function startHistoryPolling() {
     stopHistoryPolling();
     loadApprovalHistory();
-    historyPollInterval = setInterval(loadApprovalHistory, 3000);
+    historyPollInterval = setInterval(loadApprovalHistory, HISTORY_POLL_MS);
 }
 function stopHistoryPolling() {
     if (historyPollInterval) { clearInterval(historyPollInterval); historyPollInterval = null; }
 }
+document.addEventListener('visibilitychange', function(){
+    if (!appUnlocked) return;
+    if (document.hidden) stopHistoryPolling(); else startHistoryPolling();
+});
 
 async function loadApprovalHistory() {
     try {
@@ -1032,7 +1045,7 @@ function renderApprovalHistory(list) {
         var el = document.createElement('div');
         el.className = 'history-item';
         el.innerHTML =
-            '<div class="history-row1"><span class="history-date">' + escapeHtml(item.date) + '</span>' +
+            '<div class="history-row1"><span class="history-date">' + escapeHtml(item.createdAt ? String(item.createdAt).slice(0,16) : item.date) + '</span>' +
             '<span class="history-count">' + escapeHtml(item.count) + '</span></div>' +
             (item.reason ? '<div class="history-reason">' + escapeHtml(item.reason) + '</div>' : '') +
             '<div class="history-statuses">' +
