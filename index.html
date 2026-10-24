@@ -35,6 +35,7 @@
         input, textarea { width: 100%; padding: 12px; background: #262626; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 18px; outline: none; text-align: center; font-family: inherit; }
         #nameInp    { font-size: 13px; text-align: left; direction: ltr; }
         #deptInp    { font-size: 13px; text-align: center; }
+        #jdInp      { font-size: 13px; text-align: center; }
         #addressInp { font-size: 13px; }
         .safe-hours   { color: #00ff88 !important; font-weight: bold; }
         .danger-hours { color: #ff3333 !important; font-weight: bold; }
@@ -222,6 +223,7 @@
         <div id="detailsSection" style="display:none;">
             <div class="field-group"><label data-i18n="nameLabel">Name:</label><input type="text" id="nameInp" disabled></div>
             <div class="field-group"><label data-i18n="deptLabel">Department:</label><input type="text" id="deptInp" disabled></div>
+            <div class="field-group"><label data-i18n="jdLabel">Job Description:</label><input type="text" id="jdInp" disabled></div>
             <div class="field-group"><label data-i18n="addressLabel">Address:</label><input type="text" id="addressInp" disabled></div>
             <div class="field-group">
                 <label data-i18n="hoursLabel">Total Hours:</label>
@@ -320,7 +322,7 @@ var translations = {
     viewSingle: "Single Entry", viewBulk: "Bulk Excel Upload",
     codeLabel: "Employee Code:", codePlaceholder: "Enter code...",
     checkBtn: "Check",
-    nameLabel: "Name:", deptLabel: "Department:", addressLabel: "Address:", hoursLabel: "Total Hours:",
+    nameLabel: "Name:", deptLabel: "Department:", jdLabel: "Job Description:", addressLabel: "Address:", hoursLabel: "Total Hours:",
     submitBtn: "Submit", backBtn: "Back",
     uploadTitle: "Choose Excel file", uploadOr: "or drop it here",
     uploadHint: "xlsx / xls / csv — first column must contain employee codes",
@@ -330,13 +332,13 @@ var translations = {
     badgeOk: "Eligible", badgeBlocked: "Over Limit", badgeRegistered: "Registered", badgeUnknown: "Not Found",
     submitAllLabelTpl: "Submit {n} eligible employee(s)",
     downloadXlsBtn: "Download Results Excel", bulkResetBtn: "Upload New File",
-    approvalBtn: "Send Names to Manager for Approval",
+    approvalBtn: "Send Names to Department Manager for Approval",
     downloadHistoryBtn: "Download Today's Log (Excel)",
     historyTitle: "Overtime Approval History", historyEmpty: "No approval requests sent yet",
-    historyManagerLabel: "Manager", historyHRLabel: "HR",
+    historyManagerLabel: "Dept. Manager", historyFactoryLabel: "Factory Manager",
     statusPending: "Pending", statusApproved: "Approved", statusRejected: "Rejected", statusNotYet: "Not yet",
     reasonModalTitle: "Overtime Reason",
-    reasonModalSubtitle: "Please write the reason for this overtime request before sending it to the manager",
+    reasonModalSubtitle: "Please write the reason for this overtime request before sending it to the department manager",
     reasonLabel: "Reason", reasonPlaceholder: "e.g. Urgent shipment deadline for order #...",
     reasonRequiredErr: "Please write a reason before sending",
     sendBtn: "Send", cancelBtn: "Cancel", sendingBtn: "Sending...",
@@ -352,7 +354,7 @@ var translations = {
     bulkPartialTpl: "Done: {sent}  |  Failed: {failed}",
     bulkNoneToDownload: "No eligible employees to download",
     downloadingHistory: "Downloading...", downloadFailed: "Download failed",
-    approvalSentOkTpl: "{n} name(s) sent to the factory manager for approval",
+    approvalSentOkTpl: "{n} name(s) sent to the department manager for approval",
     approvalEmpty: "No new names to send", approvalError: "An error occurred while sending",
     approvalConnErr: "Failed to connect to the server",
     locale: "en-US"
@@ -372,7 +374,7 @@ var translations = {
     viewSingle: "تسجيل فردي", viewBulk: "رفع Excel جماعي",
     codeLabel: "كود العامل:", codePlaceholder: "ادخل الكود...",
     checkBtn: "فحص",
-    nameLabel: "الاسم:", deptLabel: "القسم:", addressLabel: "العنوان:", hoursLabel: "إجمالي الساعات:",
+    nameLabel: "الاسم:", deptLabel: "القسم:", jdLabel: "الوظيفة:", addressLabel: "العنوان:", hoursLabel: "إجمالي الساعات:",
     submitBtn: "تأكيد وإرسال", backBtn: "رجوع",
     uploadTitle: "اختر ملف Excel", uploadOr: "أو اسحبه هنا",
     uploadHint: "xlsx / xls / csv — العمود الأول يجب أن يحتوي أكواد الموظفين",
@@ -382,13 +384,13 @@ var translations = {
     badgeOk: "مسموح", badgeBlocked: "تجاوز الحد", badgeRegistered: "مسجّل", badgeUnknown: "غير موجود",
     submitAllLabelTpl: "تسجيل {n} موظف مسموح لهم",
     downloadXlsBtn: "تحميل النتائج Excel", bulkResetBtn: "رفع ملف جديد",
-    approvalBtn: "إرسال الأسماء لمدير المصنع للموافقة",
+    approvalBtn: "إرسال الأسماء لمدير القسم للموافقة",
     downloadHistoryBtn: "تحميل سجل اليوم Excel",
     historyTitle: "سجل طلبات موافقة الأوفرتايم", historyEmpty: "لا توجد طلبات موافقة مُرسلة بعد",
-    historyManagerLabel: "المدير", historyHRLabel: "الـ HR",
+    historyManagerLabel: "مدير القسم", historyFactoryLabel: "مدير المصنع",
     statusPending: "قيد الانتظار", statusApproved: "تمت الموافقة", statusRejected: "مرفوض", statusNotYet: "لسه",
     reasonModalTitle: "سبب الأوفرتايم",
-    reasonModalSubtitle: "من فضلك اكتب سبب طلب الأوفرتايم ده قبل إرساله للمدير",
+    reasonModalSubtitle: "من فضلك اكتب سبب طلب الأوفرتايم ده قبل إرساله لمدير القسم",
     reasonLabel: "السبب", reasonPlaceholder: "مثال: ميعاد تسليم شحنة عاجل لأوردر رقم...",
     reasonRequiredErr: "من فضلك اكتب السبب قبل الإرسال",
     sendBtn: "إرسال", cancelBtn: "إلغاء", sendingBtn: "جاري الإرسال...",
@@ -404,7 +406,7 @@ var translations = {
     bulkPartialTpl: "تم: {sent}  |  فشل: {failed}",
     bulkNoneToDownload: "لا يوجد موظفون مسموح لهم لتحميلهم",
     downloadingHistory: "جاري التحميل...", downloadFailed: "فشل التحميل",
-    approvalSentOkTpl: "تم إرسال {n} اسم لمدير المصنع للموافقة",
+    approvalSentOkTpl: "تم إرسال {n} اسم لمدير القسم للموافقة",
     approvalEmpty: "لا يوجد أسماء جديدة لإرسالها", approvalError: "حدث خطأ أثناء الإرسال",
     approvalConnErr: "فشل الاتصال بالسيرفر",
     locale: "ar-EG"
@@ -424,7 +426,7 @@ var translations = {
     viewSingle: "Tekli Kayıt", viewBulk: "Toplu Excel Yükleme",
     codeLabel: "Çalışan Kodu:", codePlaceholder: "Kodu girin...",
     checkBtn: "Kontrol Et",
-    nameLabel: "Ad:", deptLabel: "Departman:", addressLabel: "Adres:", hoursLabel: "Toplam Saat:",
+    nameLabel: "Ad:", deptLabel: "Departman:", jdLabel: "İş Tanımı:", addressLabel: "Adres:", hoursLabel: "Toplam Saat:",
     submitBtn: "Onayla ve Gönder", backBtn: "Geri",
     uploadTitle: "Excel dosyası seçin", uploadOr: "veya buraya sürükleyin",
     uploadHint: "xlsx / xls / csv — ilk sütun çalışan kodlarını içermelidir",
@@ -434,13 +436,13 @@ var translations = {
     badgeOk: "Uygun", badgeBlocked: "Limit Aşıldı", badgeRegistered: "Kayıtlı", badgeUnknown: "Bulunamadı",
     submitAllLabelTpl: "{n} uygun çalışanı kaydet",
     downloadXlsBtn: "Sonuçları İndir (Excel)", bulkResetBtn: "Yeni Dosya Yükle",
-    approvalBtn: "İsimleri Fabrika Müdürüne Onaya Gönder",
+    approvalBtn: "İsimleri Bölüm Müdürüne Onaya Gönder",
     downloadHistoryBtn: "Günlük Kaydı İndir (Excel)",
     historyTitle: "Fazla Mesai Onay Geçmişi", historyEmpty: "Henüz gönderilmiş onay talebi yok",
-    historyManagerLabel: "Müdür", historyHRLabel: "İK",
+    historyManagerLabel: "Bölüm Müdürü", historyFactoryLabel: "Fabrika Müdürü",
     statusPending: "Beklemede", statusApproved: "Onaylandı", statusRejected: "Reddedildi", statusNotYet: "Henüz değil",
     reasonModalTitle: "Fazla Mesai Nedeni",
-    reasonModalSubtitle: "Müdüre göndermeden önce lütfen bu fazla mesai talebinin nedenini yazın",
+    reasonModalSubtitle: "Bölüm müdürüne göndermeden önce lütfen bu fazla mesai talebinin nedenini yazın",
     reasonLabel: "Neden", reasonPlaceholder: "örn: Sipariş #... için acil sevkiyat teslim tarihi",
     reasonRequiredErr: "Göndermeden önce lütfen bir neden yazın",
     sendBtn: "Gönder", cancelBtn: "İptal", sendingBtn: "Gönderiliyor...",
@@ -456,7 +458,7 @@ var translations = {
     bulkPartialTpl: "Tamamlanan: {sent}  |  Başarısız: {failed}",
     bulkNoneToDownload: "İndirilecek uygun çalışan yok",
     downloadingHistory: "İndiriliyor...", downloadFailed: "İndirme başarısız",
-    approvalSentOkTpl: "{n} isim fabrika müdürüne onay için gönderildi",
+    approvalSentOkTpl: "{n} isim bölüm müdürüne onay için gönderildi",
     approvalEmpty: "Gönderilecek yeni isim yok", approvalError: "Gönderirken bir hata oluştu",
     approvalConnErr: "Sunucuya bağlanılamadı",
     locale: "tr-TR"
@@ -504,8 +506,8 @@ function setLang(lang, skipFade) {
 }
 
 // ===== TIME GATE =====
-var OPEN_H  = 11;
-var CLOSE_H = 17;
+var OPEN_H  = 0;
+var CLOSE_H = 23;
 var appUnlocked = false;
 
 function getNowSec() {
@@ -572,9 +574,9 @@ function doLogin() {
 }
 
 // ===== API =====
-var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbzZi2JlJ3eatTu9jgMugle4ydHM3eHognvlf7xTEIsH0bpflkx6LGvp7KTFzV9GGnnR/exec";
-var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbzZi2JlJ3eatTu9jgMugle4ydHM3eHognvlf7xTEIsH0bpflkx6LGvp7KTFzV9GGnnR/exec";
-var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbzZi2JlJ3eatTu9jgMugle4ydHM3eHognvlf7xTEIsH0bpflkx6LGvp7KTFzV9GGnnR/exec";
+var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbxdez-ljtNjBhnVqRaxv6tNxJsHNq3I0pTH8TvajMFs0lbT3cymbhzX3vi4mmWzh40I/exec";
+var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbxdez-ljtNjBhnVqRaxv6tNxJsHNq3I0pTH8TvajMFs0lbT3cymbhzX3vi4mmWzh40I/exec";
+var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbxdez-ljtNjBhnVqRaxv6tNxJsHNq3I0pTH8TvajMFs0lbT3cymbhzX3vi4mmWzh40I/exec";
 
 var currentMode = 'normal';
 var MODE_COLORS = { normal: '#2e7d32', saturday: '#1565c0', holiday: '#6a1b9a' };
@@ -671,7 +673,7 @@ async function fetchEmployee(code) {
         clearTimeout(timer);
         var d=await res.json();
         if (d.status==="success"){
-            var emp={name:d.name, dept:d.dept, hours:d.hours, address:d.address||''};
+            var emp={name:d.name, dept:d.dept, hours:d.hours, address:d.address||'', jd:d.jd||''};
             employeeCacheStore[mode][code]=emp;
             return {found:true, data:emp};
         }
@@ -716,12 +718,12 @@ async function lookupBulkCodes(codes) {
         fill.style.width=((i/total)*100)+'%';
         var r=await fetchEmployee(code);
         if (!r.found)
-            results.push({code:code, status:'unknown', name:'-', dept:'-', address:'-', displayTime:'-', eligible:false});
+            results.push({code:code, status:'unknown', name:'-', dept:'-', jd:'-', address:'-', displayTime:'-', eligible:false});
         else if (r.alreadyRegistered)
-            results.push({code:code, status:'registered', name:'-', dept:'-', address:'-', displayTime:'-', eligible:false});
+            results.push({code:code, status:'registered', name:'-', dept:'-', jd:'-', address:'-', displayTime:'-', eligible:false});
         else {
             var tm=extractLiteralTime(r.data.hours), el=isEligible(tm);
-            results.push({code:code, status:el?'ok':'blocked', name:r.data.name, dept:r.data.dept, address:r.data.address||'', displayTime:tm, eligible:el});
+            results.push({code:code, status:el?'ok':'blocked', name:r.data.name, dept:r.data.dept, jd:r.data.jd||'', address:r.data.address||'', displayTime:tm, eligible:el});
         }
         await sleep(80);
     }
@@ -748,7 +750,7 @@ function renderBulkResults(results) {
         else if (r.status==='registered') badge='<span class="row-badge badge-skip">'+t('badgeRegistered')+'</span>';
         else                              badge='<span class="row-badge" style="background:rgba(255,165,0,0.1);color:#ffa500;border:1px solid #cc840066">'+t('badgeUnknown')+'</span>';
         var hourColor = r.status==='ok'?'color:#00ff88':r.status==='blocked'?'color:#ff4444':'color:#888';
-        tr.innerHTML='<td style="font-family:monospace;color:#ddd">'+r.code+'</td><td>'+r.name+'</td><td style="'+hourColor+'">'+r.displayTime+'</td><td>'+badge+'</td>';
+        tr.innerHTML='<td style="font-family:monospace;color:#ddd">'+r.code+'</td><td>'+escapeHtml(r.name)+(r.jd&&r.jd!=='-'?'<br><span style="color:#777;font-size:10px;">'+escapeHtml(r.jd)+'</span>':'')+'</td><td style="'+hourColor+'">'+r.displayTime+'</td><td>'+badge+'</td>';
         tbody.appendChild(tr);
     });
     eligibleList=el;
@@ -768,7 +770,7 @@ async function submitAllEligible() {
         var emp=eligibleList[i];
         try {
             await fetch(getApiUrl(currentMode),{method:'POST',mode:'no-cors',body:JSON.stringify({
-                code:emp.code, name:emp.name, dept:emp.dept, hours:emp.displayTime, address:emp.address||''
+                code:emp.code, name:emp.name, dept:emp.dept, jd:emp.jd||'', hours:emp.displayTime, address:emp.address||''
             })});
             sent++;
         } catch(e){ failed++; }
@@ -802,12 +804,12 @@ function downloadBulkExcel() {
     if (!eligibleOnly.length) { showBulkMsg(t('bulkNoneToDownload'),"warn"); return; }
     var d = new Date().toISOString().split('T')[0];
     var html = xlsHeader() + '<table>'
-        + '<tr><td colspan="4" class="title">PRODUCTION - OVERTIME REPORT</td></tr>'
-        + '<tr><td colspan="2" class="meta">Date</td><td colspan="2" class="meta">'+d+'</td></tr>'
-        + '<tr><td colspan="4" style="border:none;height:6px;"></td></tr>'
-        + '<tr><th class="hdr">Employee Code</th><th class="hdr">Full Name</th><th class="hdr">Address</th><th class="hdr">Overtime Hours</th></tr>';
+        + '<tr><td colspan="5" class="title">PRODUCTION - OVERTIME REPORT</td></tr>'
+        + '<tr><td colspan="2" class="meta">Date</td><td colspan="3" class="meta">'+d+'</td></tr>'
+        + '<tr><td colspan="5" style="border:none;height:6px;"></td></tr>'
+        + '<tr><th class="hdr">Employee Code</th><th class="hdr">Full Name</th><th class="hdr">Job Description</th><th class="hdr">Address</th><th class="hdr">Overtime Hours</th></tr>';
     eligibleOnly.forEach(function(r){
-        html+='<tr><td>'+r.code+'</td><td>'+r.name+'</td><td>'+(r.address||'-')+'</td><td class="h-ok">'+r.displayTime+'</td></tr>';
+        html+='<tr><td>'+r.code+'</td><td>'+r.name+'</td><td>'+(r.jd||'-')+'</td><td>'+(r.address||'-')+'</td><td class="h-ok">'+r.displayTime+'</td></tr>';
     });
     html+='</table></body></html>';
     triggerXls(html,'PRODUCTION_Overtime_BulkResult_'+d+'.xls');
@@ -820,13 +822,13 @@ async function downloadHistoryExcel() {
         if (data.status==="success") {
             var d=new Date().toISOString().split('T')[0];
             var html=xlsHeader()+'<table>'
-                +'<tr><td colspan="7" class="title">PRODUCTION - DAILY OVERTIME REPORT</td></tr>'
-                +'<tr><td colspan="3" class="meta">Date</td><td colspan="4" class="meta">'+d+'</td></tr>'
-                +'<tr><td colspan="3" class="meta">Total Registered</td><td colspan="4" class="meta num">'+data.list.length+'</td></tr>'
-                +'<tr><td colspan="7" style="border:none;height:6px;"></td></tr>'
-                +'<tr><th class="hdr">#</th><th class="hdr">Employee Code</th><th class="hdr">Full Name</th><th class="hdr">Department</th><th class="hdr">Address</th><th class="hdr">Overtime Hours</th><th class="hdr">Reg. Time</th></tr>';
+                +'<tr><td colspan="8" class="title">PRODUCTION - DAILY OVERTIME REPORT</td></tr>'
+                +'<tr><td colspan="3" class="meta">Date</td><td colspan="5" class="meta">'+d+'</td></tr>'
+                +'<tr><td colspan="3" class="meta">Total Registered</td><td colspan="5" class="meta num">'+data.list.length+'</td></tr>'
+                +'<tr><td colspan="8" style="border:none;height:6px;"></td></tr>'
+                +'<tr><th class="hdr">#</th><th class="hdr">Employee Code</th><th class="hdr">Full Name</th><th class="hdr">Department</th><th class="hdr">Job Description</th><th class="hdr">Address</th><th class="hdr">Overtime Hours</th><th class="hdr">Reg. Time</th></tr>';
             data.list.forEach(function(r,i){
-                html+='<tr><td class="num">'+(i+1)+'</td><td>'+r.code+'</td><td>'+r.name+'</td><td>'+r.dept+'</td><td>'+(r.address||'-')+'</td><td class="h-ok">'+extractLiteralTime(r.hours)+'</td><td>'+formatRegTime(r.time)+'</td></tr>';
+                html+='<tr><td class="num">'+(i+1)+'</td><td>'+r.code+'</td><td>'+r.name+'</td><td>'+r.dept+'</td><td>'+(r.jd||'-')+'</td><td>'+(r.address||'-')+'</td><td class="h-ok">'+extractLiteralTime(r.hours)+'</td><td>'+formatRegTime(r.time)+'</td></tr>';
             });
             html+='</table></body></html>';
             triggerXls(html,'PRODUCTION_Overtime_'+d+'.xls');
@@ -855,14 +857,14 @@ function resetBulk() {
 async function lookupEmployee() {
     var code=String(document.getElementById('codeInp').value).trim();
     if (!code) return showMessage(t('errEnterCode'),"error");
-    if (cacheLoadedStore[currentMode]&&employeeCacheStore[currentMode][code]){ var e=employeeCacheStore[currentMode][code]; displayEmployee({status:"success",name:e.name,dept:e.dept,hours:e.hours,address:e.address||''}); return; }
+    if (cacheLoadedStore[currentMode]&&employeeCacheStore[currentMode][code]){ var e=employeeCacheStore[currentMode][code]; displayEmployee({status:"success",name:e.name,dept:e.dept,jd:e.jd||'',hours:e.hours,address:e.address||''}); return; }
     showMessage(t('searching'),"info");
     try {
         var ctrl=new AbortController(), timer=setTimeout(function(){ ctrl.abort(); },15000);
         var res=await fetch(getApiUrl(currentMode)+'?code='+code,{signal:ctrl.signal}); clearTimeout(timer);
         var data=await res.json();
         if (data.status==="already_registered") return showMessage(t('alreadyRegistered'),"error");
-        if (data.status==="success"){ displayEmployee(data); employeeCacheStore[currentMode][code]={name:data.name,dept:data.dept,hours:data.hours,address:data.address||''}; }
+        if (data.status==="success"){ displayEmployee(data); employeeCacheStore[currentMode][code]={name:data.name,dept:data.dept,jd:data.jd||'',hours:data.hours,address:data.address||''}; }
         else showMessage(t('codeNotFound'),"error");
     } catch(e){ showMessage(e.name==='AbortError'?t('timeoutErr'):t('connErr'),"error"); }
 }
@@ -870,6 +872,7 @@ async function lookupEmployee() {
 function displayEmployee(data) {
     document.getElementById('nameInp').value    = data.name;
     document.getElementById('deptInp').value    = data.dept;
+    document.getElementById('jdInp').value      = data.jd || '';
     document.getElementById('addressInp').value = data.address || '';
     var tm=extractLiteralTime(data.hours), hInp=document.getElementById('hoursInp');
     hInp.value=tm; hInp.className='';
@@ -894,6 +897,7 @@ async function submitData() {
         code:    document.getElementById('codeInp').value,
         name:    document.getElementById('nameInp').value,
         dept:    document.getElementById('deptInp').value,
+        jd:      document.getElementById('jdInp').value || '',
         address: document.getElementById('addressInp').value || '',
         hours:   document.getElementById('hoursInp').value
     };
@@ -1049,8 +1053,8 @@ function renderApprovalHistory(list) {
             '<span class="history-count">' + escapeHtml(item.count) + '</span></div>' +
             (item.reason ? '<div class="history-reason">' + escapeHtml(item.reason) + '</div>' : '') +
             '<div class="history-statuses">' +
-              '<span style="color:#666;font-size:10px;">' + t('historyManagerLabel') + ':</span>' + statusBadge(item.managerStatus) +
-              '<span style="color:#666;font-size:10px;">' + t('historyHRLabel') + ':</span>' + statusBadge(item.hrStatus) +
+              '<span style="color:#666;font-size:10px;">' + t('historyManagerLabel') + ':</span>' + statusBadge(item.deptStatus) +
+              '<span style="color:#666;font-size:10px;">' + t('historyFactoryLabel') + ':</span>' + statusBadge(item.factoryStatus) +
             '</div>';
         wrap.appendChild(el);
     });
