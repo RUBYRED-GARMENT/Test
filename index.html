@@ -271,7 +271,7 @@
         </div>
     </div>
 
-    <!-- زرار إرسال الأسماء لمدير المصنع للموافقة — بيفتح مودال السبب الإجباري -->
+    <!-- زرار إرسال الأسماء لمدير القسم للموافقة — بيفتح مودال السبب الإجباري -->
     <button class="btn" id="approvalBtn" onclick="openReasonModal()" data-i18n="approvalBtn">Send Names to Manager for Approval</button>
     <div id="approvalMsg"></div>
 
@@ -562,7 +562,7 @@ function doLogin() {
         appUnlocked = true;
         currentMode = 'normal';
         applyModeTheme(currentMode);
-        Promise.all([updateDashboard(), preloadEmployees()]);
+        ensureModeData(currentMode);
         startHistoryPolling();
         setTimeout(function(){ document.getElementById('codeInp').focus(); }, 100);
     } else {
@@ -574,9 +574,9 @@ function doLogin() {
 }
 
 // ===== API =====
-var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbyWIbsGO_fuS7mwPWV-AbpRAw9ikT5TS83Aw2vss__1kfmc0I227J2RyJmVg_71sjY/exec";
-var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbyWIbsGO_fuS7mwPWV-AbpRAw9ikT5TS83Aw2vss__1kfmc0I227J2RyJmVg_71sjY/exec";
-var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbyWIbsGO_fuS7mwPWV-AbpRAw9ikT5TS83Aw2vss__1kfmc0I227J2RyJmVg_71sjY/exec";
+var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbyeL2WsaFxnFvPzaPeqXecIdoo6uipUQjRt6dqfBOAGwDiQa-Qd4_B4qlvO_W0Ny7mF/exec";
+var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbyeL2WsaFxnFvPzaPeqXecIdoo6uipUQjRt6dqfBOAGwDiQa-Qd4_B4qlvO_W0Ny7mF/exec";
+var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbyeL2WsaFxnFvPzaPeqXecIdoo6uipUQjRt6dqfBOAGwDiQa-Qd4_B4qlvO_W0Ny7mF/exec";
 
 var currentMode = 'normal';
 var MODE_COLORS = { normal: '#2e7d32', saturday: '#1565c0', holiday: '#6a1b9a' };
@@ -594,24 +594,103 @@ function applyModeTheme(mode) {
     if (bs) bs.textContent = t(key);
 }
 
+// ===== LOCAL CACHE (سرعة البحث) =====
+// employeeCacheStore : كل موظفي الشيت الرئيسي (بيتحمّلوا مرة واحدة في طلب واحد)
+// registeredStore    : أكواد المسجلين النهارده (بتتحدّث كل 20 ثانية + محليًا عند كل تسجيل)
+// pendingStore       : أكواد سجّلناها إحنا لسه السيرفر ماأكدهاش (عشان التحديث الدوري مايمسحهاش بالغلط)
 var employeeCacheStore = { normal: {}, saturday: {}, holiday: {} };
 var cacheLoadedStore   = { normal: false, saturday: false, holiday: false };
+var registeredStore    = { normal: {}, saturday: {}, holiday: {} };
+var pendingStore       = { normal: {}, saturday: {}, holiday: {} };
+var preloadPromises    = { normal: null, saturday: null, holiday: null };
+var PENDING_TTL_MS     = 60000;
 
-async function preloadEmployees() {
-    var mode = currentMode;
-    if (cacheLoadedStore[mode]) return;
+async function preloadEmployees(mode, force) {
+    mode = mode || currentMode;
+    if (!force && cacheLoadedStore[mode]) return;
+    if (preloadPromises[mode]) return preloadPromises[mode];
+    preloadPromises[mode] = (async function() {
+        try {
+            var ctrl = new AbortController();
+            var timer = setTimeout(function(){ ctrl.abort(); }, 30000);
+            var res   = await fetch(getApiUrl(mode) + '?action=getAllEmployees', { signal: ctrl.signal });
+            clearTimeout(timer);
+            var data  = await res.json();
+            if (data.status === "success" && data.employees) {
+                var store = {};
+                data.employees.forEach(function(e){ store[String(e.code).trim()] = e; });
+                employeeCacheStore[mode] = store;
+                cacheLoadedStore[mode]   = true;
+                applyRegisteredList(mode, data.registered || []);
+            }
+        } catch(e) {}
+        preloadPromises[mode] = null;
+    })();
+    return preloadPromises[mode];
+}
+
+function applyRegisteredList(mode, list) {
+    var set = {};
+    for (var i = 0; i < list.length; i++) {
+        var c = String(list[i]).trim();
+        if (c) set[c] = true;
+    }
+    var now = Date.now(), pend = pendingStore[mode];
+    Object.keys(pend).forEach(function(c){
+        if (set[c]) delete pend[c];                      // السيرفر أكّدها
+        else if (now - pend[c] < PENDING_TTL_MS) set[c] = true; // لسه جديدة، نحتفظ بيها
+        else delete pend[c];                             // عدّى وقت كفاية ومالقيناهاش
+    });
+    registeredStore[mode] = set;
+    if (mode === currentMode) updateCountFromLocal();
+}
+function markRegisteredLocal(mode, code) {
+    code = String(code).trim();
+    registeredStore[mode][code] = true;
+    pendingStore[mode][code] = Date.now();
+}
+function unmarkRegisteredLocal(mode, code) {
+    code = String(code).trim();
+    delete registeredStore[mode][code];
+    delete pendingStore[mode][code];
+}
+function updateCountFromLocal() {
+    document.getElementById('countDash').innerText = Object.keys(registeredStore[currentMode]).length;
+}
+
+async function fetchRegisteredRaw(mode) {
     try {
         var ctrl = new AbortController();
         var timer = setTimeout(function(){ ctrl.abort(); }, 15000);
-        var res   = await fetch(getApiUrl(mode) + '?action=getAllEmployees', { signal: ctrl.signal });
+        var res = await fetch(getApiUrl(mode) + '?action=getTodayCodes', { signal: ctrl.signal });
         clearTimeout(timer);
-        var data  = await res.json();
-        if (data.status === "success" && data.employees) {
-            data.employees.forEach(function(e){ employeeCacheStore[mode][String(e.code).trim()] = e; });
-            cacheLoadedStore[mode] = true;
-        }
+        var d = await res.json();
+        if (d.status === 'success' && d.registered) return d.registered;
     } catch(e) {}
+    return null;
 }
+async function refreshRegistered(mode) {
+    var list = await fetchRegisteredRaw(mode);
+    if (list) applyRegisteredList(mode, list);
+}
+
+// يحمّل بيانات الوضع (Normal/Saturday/Holiday) لو لسه، ويحدّث العدّاد
+function ensureModeData(mode) {
+    if (cacheLoadedStore[mode]) { updateCountFromLocal(); return Promise.resolve(); }
+    document.getElementById('countDash').innerText = '...';
+    return preloadEmployees(mode).then(function(){
+        if (mode !== currentMode) return;
+        if (cacheLoadedStore[mode]) updateCountFromLocal();
+        else updateDashboardRemote(); // لو السكريبت لسه القديم (مفيش getAllEmployees)
+    });
+}
+
+setInterval(function(){
+    if (appUnlocked && !document.hidden && cacheLoadedStore[currentMode]) refreshRegistered(currentMode);
+}, 20000);
+setInterval(function(){
+    if (appUnlocked && !document.hidden && cacheLoadedStore[currentMode]) preloadEmployees(currentMode, true);
+}, 600000);
 
 // ===== MODE + VIEW =====
 var currentView = 'single';
@@ -623,8 +702,7 @@ function switchMode(mode) {
     document.getElementById('modeHolidayBtn').classList.toggle('active', mode==='holiday');
 
     applyModeTheme(mode);
-    updateDashboard();
-    if (!cacheLoadedStore[mode]) preloadEmployees();
+    ensureModeData(mode);
     startHistoryPolling();
 
     switchView(currentView);
@@ -664,9 +742,15 @@ function extractLiteralTime(raw) {
 }
 function isEligible(t){ var h=parseInt(t.split(':')[0])||0, m=parseInt(t.split(':')[1])||0; return !(h>11||(h===11&&m>0)); }
 
-async function fetchEmployee(code) {
+// allowRemote=false في الرفع الجماعي (بنثق في الكاش ومنسألش السيرفر عن كل كود)
+async function fetchEmployee(code, allowRemote) {
     var mode = currentMode;
-    if (cacheLoadedStore[mode] && employeeCacheStore[mode][code]) return { found:true, data:employeeCacheStore[mode][code] };
+    if (cacheLoadedStore[mode]) {
+        if (registeredStore[mode][code]) return { found:true, alreadyRegistered:true, data:null };
+        var cached = employeeCacheStore[mode][code];
+        if (cached) return { found:true, data:cached };
+        if (!allowRemote) return { found:false };
+    }
     try {
         var ctrl=new AbortController(), timer=setTimeout(function(){ ctrl.abort(); },15000);
         var res=await fetch(getApiUrl(mode)+'?code='+encodeURIComponent(code),{signal:ctrl.signal});
@@ -677,7 +761,7 @@ async function fetchEmployee(code) {
             employeeCacheStore[mode][code]=emp;
             return {found:true, data:emp};
         }
-        if (d.status==="already_registered") return {found:true,alreadyRegistered:true,data:null};
+        if (d.status==="already_registered") { registeredStore[mode][code]=true; return {found:true,alreadyRegistered:true,data:null}; }
     } catch(e) {}
     return {found:false};
 }
@@ -695,9 +779,12 @@ function processExcelFile(file) {
         try {
             var data=new Uint8Array(e.target.result), wb=XLSX.read(data,{type:'array'});
             var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
-            var codes=[], startRow=0;
+            var codes=[], seen={}, startRow=0;
             if (rows.length>0){ var fc=String(rows[0][0]).trim(); if(isNaN(fc)&&fc!=='') startRow=1; }
-            for (var i=startRow;i<rows.length;i++){ var r=String(rows[i][0]).trim(); if(r&&r!==''&&r!=='undefined') codes.push(r); }
+            for (var i=startRow;i<rows.length;i++){
+                var r=String(rows[i][0]).trim();
+                if(r&&r!==''&&r!=='undefined'&&!seen[r]){ seen[r]=true; codes.push(r); } // بنشيل الأكواد المتكررة جوه الملف
+            }
             if (!codes.length){ showBulkMsg(t('bulkNoCodes'),"error"); return; }
             hideBulkMsg(); lookupBulkCodes(codes);
         } catch(err){ showBulkMsg(t('bulkFileErr'),"error"); }
@@ -705,29 +792,51 @@ function processExcelFile(file) {
     reader.readAsArrayBuffer(file);
 }
 
+function buildBulkResult(code, r) {
+    if (!r.found)
+        return {code:code, status:'unknown', name:'-', dept:'-', jd:'-', address:'-', displayTime:'-', eligible:false};
+    if (r.alreadyRegistered)
+        return {code:code, status:'registered', name:'-', dept:'-', jd:'-', address:'-', displayTime:'-', eligible:false};
+    var tm=extractLiteralTime(r.data.hours), el=isEligible(tm);
+    return {code:code, status:el?'ok':'blocked', name:r.data.name, dept:r.data.dept, jd:r.data.jd||'', address:r.data.address||'', displayTime:tm, eligible:el};
+}
+
 async function lookupBulkCodes(codes) {
     document.getElementById('uploadZone').style.display='none';
     document.getElementById('bulkProgress').style.display='block';
     document.getElementById('bulkResultsWrap').style.display='none';
     hideBulkMsg();
-    var results=[], total=codes.length;
+    var mode = currentMode;
+    var total = codes.length;
     var fill=document.getElementById('progressFill'), prog=document.getElementById('progressText');
-    for (var i=0;i<total;i++) {
-        var code=codes[i];
-        prog.textContent=tpl('bulkSendingProgressTpl',{done:(i+1),total:total}) + '  (' + code + ')';
-        fill.style.width=((i/total)*100)+'%';
-        var r=await fetchEmployee(code);
-        if (!r.found)
-            results.push({code:code, status:'unknown', name:'-', dept:'-', jd:'-', address:'-', displayTime:'-', eligible:false});
-        else if (r.alreadyRegistered)
-            results.push({code:code, status:'registered', name:'-', dept:'-', jd:'-', address:'-', displayTime:'-', eligible:false});
-        else {
-            var tm=extractLiteralTime(r.data.hours), el=isEligible(tm);
-            results.push({code:code, status:el?'ok':'blocked', name:r.data.name, dept:r.data.dept, jd:r.data.jd||'', address:r.data.address||'', displayTime:tm, eligible:el});
+    prog.textContent = t('progressDefault');
+
+    // لو الكاش لسه بيتحمّل نستناه بدل ما نسأل السيرفر عن كل كود
+    if (!cacheLoadedStore[mode]) await preloadEmployees(mode);
+
+    var fast = cacheLoadedStore[mode];     // بحث محلي لحظي
+    var results = new Array(total);
+    var done = 0, next = 0;
+
+    async function worker() {
+        while (true) {
+            var i = next++;
+            if (i >= total) return;
+            var r = await fetchEmployee(codes[i], false);
+            results[i] = buildBulkResult(codes[i], r);
+            done++;
+            if (!fast || done % 100 === 0) {
+                prog.textContent = tpl('bulkSendingProgressTpl',{done:done,total:total});
+                fill.style.width = ((done/total)*100) + '%';
+            }
+            if (fast && done % 200 === 0) await sleep(0); // نسيب المتصفح يرسم
         }
-        await sleep(80);
     }
-    fill.style.width='100%'; prog.textContent=t('progressDefault'); await sleep(400);
+    var workers = [], conc = fast ? 1 : 5; // لو الكاش مش شغال (سكريبت قديم) نبحث 5 أكواد في نفس الوقت
+    for (var k = 0; k < conc; k++) workers.push(worker());
+    await Promise.all(workers);
+
+    fill.style.width='100%';
     renderBulkResults(results);
 }
 
@@ -741,18 +850,17 @@ function renderBulkResults(results) {
     document.getElementById('statEligible').textContent=el.length;
     document.getElementById('statBlocked').textContent=bl.length;
     document.getElementById('statUnknown').textContent=un.length;
-    var tbody=document.getElementById('bulkTableBody'); tbody.innerHTML='';
+    var parts=[];
     results.forEach(function(r){
-        var tr=document.createElement('tr');
         var badge='';
         if      (r.status==='ok')         badge='<span class="row-badge badge-ok">'+t('badgeOk')+'</span>';
         else if (r.status==='blocked')    badge='<span class="row-badge badge-skip">'+t('badgeBlocked')+'</span>';
         else if (r.status==='registered') badge='<span class="row-badge badge-skip">'+t('badgeRegistered')+'</span>';
         else                              badge='<span class="row-badge" style="background:rgba(255,165,0,0.1);color:#ffa500;border:1px solid #cc840066">'+t('badgeUnknown')+'</span>';
         var hourColor = r.status==='ok'?'color:#00ff88':r.status==='blocked'?'color:#ff4444':'color:#888';
-        tr.innerHTML='<td style="font-family:monospace;color:#ddd">'+r.code+'</td><td>'+escapeHtml(r.name)+(r.jd&&r.jd!=='-'?'<br><span style="color:#777;font-size:10px;">'+escapeHtml(r.jd)+'</span>':'')+'</td><td style="'+hourColor+'">'+r.displayTime+'</td><td>'+badge+'</td>';
-        tbody.appendChild(tr);
+        parts.push('<tr><td style="font-family:monospace;color:#ddd">'+escapeHtml(r.code)+'</td><td>'+escapeHtml(r.name)+(r.jd&&r.jd!=='-'?'<br><span style="color:#777;font-size:10px;">'+escapeHtml(r.jd)+'</span>':'')+'</td><td style="'+hourColor+'">'+r.displayTime+'</td><td>'+badge+'</td></tr>');
     });
+    document.getElementById('bulkTableBody').innerHTML = parts.join('');   // رسم الجدول مرة واحدة
     eligibleList=el;
     var sb=document.getElementById('submitAllBtn');
     if (el.length>0){ sb.style.display='block'; document.getElementById('submitAllLabel').textContent=tpl('submitAllLabelTpl',{n:el.length}); }
@@ -761,25 +869,49 @@ function renderBulkResults(results) {
     document.getElementById('bulkResetBtn').style.display='block';
 }
 
+// الإرسال دفعات كبيرة (طلب واحد لكل 400 موظف) بدل طلب لكل موظف، وبعدها بنتأكد من السيرفر مين اتسجل فعلًا
 async function submitAllEligible() {
     if (!eligibleList.length) return;
+    var mode = currentMode;
     var btn=document.getElementById('submitAllBtn'), label=document.getElementById('submitAllLabel'), spinner=document.getElementById('submitAllSpinner');
     btn.disabled=true; spinner.style.display='inline-block';
-    var sent=0, failed=0;
-    for (var i=0; i<eligibleList.length; i++) {
-        var emp=eligibleList[i];
+
+    var list = eligibleList.slice();
+    var CHUNK = 400, postedOk = [], postedFail = [];
+    for (var s = 0; s < list.length; s += CHUNK) {
+        var chunk = list.slice(s, s + CHUNK);
+        label.textContent = tpl('bulkSendingProgressTpl',{done:Math.min(s + CHUNK, list.length), total:list.length});
+        var batch = chunk.map(function(emp){
+            return { code:emp.code, name:emp.name, dept:emp.dept, jd:emp.jd||'', hours:emp.displayTime, address:emp.address||'' };
+        });
         try {
-            await fetch(getApiUrl(currentMode),{method:'POST',mode:'no-cors',body:JSON.stringify({
-                code:emp.code, name:emp.name, dept:emp.dept, jd:emp.jd||'', hours:emp.displayTime, address:emp.address||''
-            })});
-            sent++;
-        } catch(e){ failed++; }
-        label.textContent=tpl('bulkSendingProgressTpl',{done:(sent+failed),total:eligibleList.length});
-        await sleep(150);
+            await fetch(getApiUrl(mode),{method:'POST',mode:'no-cors',body:JSON.stringify({batch:batch})});
+            postedOk = postedOk.concat(chunk);
+        } catch(e) { postedFail = postedFail.concat(chunk); }
     }
-    spinner.style.display='none'; btn.disabled=false; updateDashboard();
-    if (failed===0){ btn.style.display='none'; showBulkMsg(tpl('bulkAllSentTpl',{n:sent}),'success'); }
-    else { label.textContent=t('progressDefault'); showBulkMsg(tpl('bulkPartialTpl',{sent:sent,failed:failed}),'warn'); }
+
+    // تأكيد من السيرفر: مين اتسجل فعلًا؟
+    label.textContent = t('progressDefault');
+    var failed = postedFail.slice();
+    var serverList = await fetchRegisteredRaw(mode);
+    if (serverList) {
+        var onServer = {};
+        serverList.forEach(function(c){ onServer[String(c).trim()] = true; });
+        postedOk.forEach(function(emp){ if (!onServer[String(emp.code).trim()]) failed.push(emp); });
+        applyRegisteredList(mode, serverList);
+    } else {
+        postedOk.forEach(function(emp){ markRegisteredLocal(mode, emp.code); });
+        updateCountFromLocal();
+    }
+    var sent = list.length - failed.length;
+
+    spinner.style.display='none'; btn.disabled=false;
+    if (failed.length===0){ btn.style.display='none'; eligibleList=[]; showBulkMsg(tpl('bulkAllSentTpl',{n:sent}),'success'); }
+    else {
+        eligibleList = failed;   // نسيب اللي فشل عشان يتعاد إرساله
+        label.textContent = tpl('submitAllLabelTpl',{n:failed.length});
+        showBulkMsg(tpl('bulkPartialTpl',{sent:sent,failed:failed.length}),'warn');
+    }
 }
 
 // ===== EXCEL EXPORTS =====
@@ -857,16 +989,31 @@ function resetBulk() {
 async function lookupEmployee() {
     var code=String(document.getElementById('codeInp').value).trim();
     if (!code) return showMessage(t('errEnterCode'),"error");
-    if (cacheLoadedStore[currentMode]&&employeeCacheStore[currentMode][code]){ var e=employeeCacheStore[currentMode][code]; displayEmployee({status:"success",name:e.name,dept:e.dept,jd:e.jd||'',hours:e.hours,address:e.address||''}); return; }
+    var mode = currentMode;
+
+    // لو الكاش لسه بيتحمّل نستناه (مرة واحدة بس في أول الاستخدام)
+    if (!cacheLoadedStore[mode] && preloadPromises[mode]) {
+        showMessage(t('searching'),"info");
+        await preloadPromises[mode];
+    }
+
+    // بحث محلي لحظي: متكرر؟ موجود؟
+    if (cacheLoadedStore[mode]) {
+        if (registeredStore[mode][code]) return showMessage(t('alreadyRegistered'),"error");
+        var e = employeeCacheStore[mode][code];
+        if (e) { displayEmployee({status:"success",name:e.name,dept:e.dept,jd:e.jd||'',hours:e.hours,address:e.address||''}); return; }
+    }
+
+    // مش موجود في الكاش (أو الكاش مش شغال): نسأل السيرفر مرة واحدة
     showMessage(t('searching'),"info");
     try {
         var ctrl=new AbortController(), timer=setTimeout(function(){ ctrl.abort(); },15000);
-        var res=await fetch(getApiUrl(currentMode)+'?code='+code,{signal:ctrl.signal}); clearTimeout(timer);
+        var res=await fetch(getApiUrl(mode)+'?code='+encodeURIComponent(code),{signal:ctrl.signal}); clearTimeout(timer);
         var data=await res.json();
-        if (data.status==="already_registered") return showMessage(t('alreadyRegistered'),"error");
-        if (data.status==="success"){ displayEmployee(data); employeeCacheStore[currentMode][code]={name:data.name,dept:data.dept,jd:data.jd||'',hours:data.hours,address:data.address||''}; }
+        if (data.status==="already_registered") { registeredStore[mode][code]=true; return showMessage(t('alreadyRegistered'),"error"); }
+        if (data.status==="success"){ displayEmployee(data); employeeCacheStore[mode][code]={name:data.name,dept:data.dept,jd:data.jd||'',hours:data.hours,address:data.address||''}; }
         else showMessage(t('codeNotFound'),"error");
-    } catch(e){ showMessage(e.name==='AbortError'?t('timeoutErr'):t('connErr'),"error"); }
+    } catch(err){ showMessage(err.name==='AbortError'?t('timeoutErr'):t('connErr'),"error"); }
 }
 
 function displayEmployee(data) {
@@ -892,7 +1039,9 @@ function displayEmployee(data) {
     document.getElementById('backBtn').style.display='block';
 }
 
-async function submitData() {
+// التسجيل الفردي: بنظهر النجاح فورًا ونبعت للسيرفر في الخلفية (لو فشل بنرجّع الكود ونعرض خطأ)
+function submitData() {
+    var mode = currentMode;
     var payload={
         code:    document.getElementById('codeInp').value,
         name:    document.getElementById('nameInp').value,
@@ -901,12 +1050,19 @@ async function submitData() {
         address: document.getElementById('addressInp').value || '',
         hours:   document.getElementById('hoursInp').value
     };
-    try {
-        await fetch(getApiUrl(currentMode),{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
-        showMessage(t('submitSuccess'),"success");
-        updateDashboard();
-        setTimeout(resetUI,1500);
-    } catch(e){ showMessage(t('submitFailed'),"error"); }
+    var code = String(payload.code).trim();
+    if (registeredStore[mode][code]) { showMessage(t('alreadyRegistered'),"error"); return; }
+
+    markRegisteredLocal(mode, code);
+    updateCountFromLocal();
+    showMessage(t('submitSuccess'),"success");
+    setTimeout(resetUI, 600);
+
+    fetch(getApiUrl(mode),{method:'POST',mode:'no-cors',body:JSON.stringify(payload)}).catch(function(){
+        unmarkRegisteredLocal(mode, code);
+        if (mode === currentMode) updateCountFromLocal();
+        showMessage(t('submitFailed') + ' (' + code + ')',"error");
+    });
 }
 
 function resetUI(){
@@ -917,7 +1073,12 @@ function resetUI(){
     hideMessage();
 }
 
-async function updateDashboard() {
+// العدّاد: محلي لو الكاش شغال، وإلا بنسأل السيرفر (للسكريبت القديم)
+function updateDashboard() {
+    if (cacheLoadedStore[currentMode]) updateCountFromLocal();
+    else updateDashboardRemote();
+}
+async function updateDashboardRemote() {
     try {
         var ctrl=new AbortController();
         setTimeout(function(){ ctrl.abort(); },10000);
@@ -1006,7 +1167,11 @@ function stopHistoryPolling() {
 }
 document.addEventListener('visibilitychange', function(){
     if (!appUnlocked) return;
-    if (document.hidden) stopHistoryPolling(); else startHistoryPolling();
+    if (document.hidden) stopHistoryPolling();
+    else {
+        startHistoryPolling();
+        if (cacheLoadedStore[currentMode]) refreshRegistered(currentMode);
+    }
 });
 
 async function loadApprovalHistory() {
