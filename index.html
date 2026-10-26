@@ -111,6 +111,7 @@
 
         /* ── Approval button + reason modal ── */
         #approvalBtn { background: #6a1b9a; color: #fff; font-size: 13px; margin-top: 20px; }
+        #resendAdjBtn { background: #D97706; color: #fff; font-size: 13px; margin-top: 8px; }
         #approvalMsg { margin-top: 10px; text-align: center; font-size: 12px; display: none; padding: 9px; border-radius: 8px; font-weight: bold; }
         .modal-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition: opacity .25s ease; }
         .modal-overlay.open { opacity:1; pointer-events:all; }
@@ -272,7 +273,8 @@
     </div>
 
     <!-- زرار إرسال الأسماء لمدير القسم للموافقة — بيفتح مودال السبب الإجباري -->
-    <button class="btn" id="approvalBtn" onclick="openReasonModal()" data-i18n="approvalBtn">Send Names to Manager for Approval</button>
+    <button class="btn" id="approvalBtn" onclick="openReasonModal(false)" data-i18n="approvalBtn">Send Names to Manager for Approval</button>
+    <button class="btn" id="resendAdjBtn" onclick="openReasonModal(true)" data-i18n="resendAdjBtn">Resend after adjustment</button>
     <div id="approvalMsg"></div>
 
     <button class="btn" style="background:transparent;border:1px solid #333;color:#aaa;font-size:11px;margin-top:20px;" onclick="downloadHistoryExcel()" data-i18n="downloadHistoryBtn">Download Today's Log (Excel)</button>
@@ -289,8 +291,8 @@
 <!-- Reason modal -->
 <div class="modal-overlay" id="reasonModal" onclick="handleReasonOverlayClick(event)">
     <div class="modal-box">
-        <div class="modal-title" data-i18n="reasonModalTitle">Overtime Reason</div>
-        <div class="modal-sub" data-i18n="reasonModalSubtitle">Please write the reason for this overtime request before sending it to the manager</div>
+        <div class="modal-title" id="reasonModalTitle">Overtime Reason</div>
+        <div class="modal-sub" id="reasonModalSub">Please write the reason for this overtime request before sending it to the manager</div>
         <div class="field-group" style="margin-bottom:0;">
             <label data-i18n="reasonLabel">Reason</label>
             <textarea id="reasonInp" data-i18n-ph="reasonPlaceholder" placeholder="e.g. Urgent shipment deadline for order #..."></textarea>
@@ -337,6 +339,10 @@ var translations = {
     historyTitle: "Overtime Approval History", historyEmpty: "No approval requests sent yet",
     historyManagerLabel: "Dept. Manager", historyFactoryLabel: "Factory Manager",
     statusPending: "Pending", statusApproved: "Approved", statusRejected: "Rejected", statusNotYet: "Not yet",
+    statusRejectedAdjusted: "Rejected - Adjusted", historyAdjustedTag: "After adjustment",
+    resendAdjBtn: "Resend after adjustment",
+    reasonModalTitleAdjusted: "Resend After Adjustment",
+    reasonModalSubtitleAdjusted: "Register only the numbers allowed by the factory manager first, then write the reason and send. The emails will state that this is after adjustment",
     reasonModalTitle: "Overtime Reason",
     reasonModalSubtitle: "Please write the reason for this overtime request before sending it to the department manager",
     reasonLabel: "Reason", reasonPlaceholder: "e.g. Urgent shipment deadline for order #...",
@@ -389,6 +395,10 @@ var translations = {
     historyTitle: "سجل طلبات موافقة الأوفرتايم", historyEmpty: "لا توجد طلبات موافقة مُرسلة بعد",
     historyManagerLabel: "مدير القسم", historyFactoryLabel: "مدير المصنع",
     statusPending: "قيد الانتظار", statusApproved: "تمت الموافقة", statusRejected: "مرفوض", statusNotYet: "لسه",
+    statusRejectedAdjusted: "مرفوض - تم التعديل", historyAdjustedTag: "بعد التعديل",
+    resendAdjBtn: "إعادة الإرسال بعد التعديل",
+    reasonModalTitleAdjusted: "إعادة الإرسال بعد التعديل",
+    reasonModalSubtitleAdjusted: "سجّل الأول العمال بالأعداد اللي وافق عليها مدير المصنع بس، وبعدين اكتب السبب وابعت. الإيميلات هتوضح إن ده بعد التعديل",
     reasonModalTitle: "سبب الأوفرتايم",
     reasonModalSubtitle: "من فضلك اكتب سبب طلب الأوفرتايم ده قبل إرساله لمدير القسم",
     reasonLabel: "السبب", reasonPlaceholder: "مثال: ميعاد تسليم شحنة عاجل لأوردر رقم...",
@@ -441,6 +451,10 @@ var translations = {
     historyTitle: "Fazla Mesai Onay Geçmişi", historyEmpty: "Henüz gönderilmiş onay talebi yok",
     historyManagerLabel: "Bölüm Müdürü", historyFactoryLabel: "Fabrika Müdürü",
     statusPending: "Beklemede", statusApproved: "Onaylandı", statusRejected: "Reddedildi", statusNotYet: "Henüz değil",
+    statusRejectedAdjusted: "Reddedildi - Düzeltildi", historyAdjustedTag: "Düzeltme sonrası",
+    resendAdjBtn: "Düzeltmeden sonra yeniden gönder",
+    reasonModalTitleAdjusted: "Düzeltmeden Sonra Yeniden Gönder",
+    reasonModalSubtitleAdjusted: "Önce yalnızca fabrika müdürünün onayladığı sayıda çalışanı kaydedin, sonra nedeni yazıp gönderin. E-postalarda düzeltme sonrası olduğu belirtilecek",
     reasonModalTitle: "Fazla Mesai Nedeni",
     reasonModalSubtitle: "Bölüm müdürüne göndermeden önce lütfen bu fazla mesai talebinin nedenini yazın",
     reasonLabel: "Neden", reasonPlaceholder: "örn: Sipariş #... için acil sevkiyat teslim tarihi",
@@ -496,6 +510,7 @@ function setLang(lang, skipFade) {
     hi.style.transform = 'translateX(' + (idx * 100) + '%)';
 
     applyModeTheme(currentMode);
+    updateReasonModalTexts();
     renderApprovalHistory(lastHistoryList);
 
     try { localStorage.setItem('ot_lang', lang); } catch(e) {}
@@ -574,9 +589,9 @@ function doLogin() {
 }
 
 // ===== API =====
-var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbxl-5an-8phOyexlqQNE2H5lZRWYnq4tYing2qv5wHV1uMKlXzPbl7WlwVUnE2uJBeS/exec";
-var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbxl-5an-8phOyexlqQNE2H5lZRWYnq4tYing2qv5wHV1uMKlXzPbl7WlwVUnE2uJBeS/exec";
-var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbxl-5an-8phOyexlqQNE2H5lZRWYnq4tYing2qv5wHV1uMKlXzPbl7WlwVUnE2uJBeS/exec";
+var API_URL_NORMAL   = "https://script.google.com/macros/s/AKfycbw25pAwcgfVaQ0nQCZtPezYhdfykOrFtsq8elSbdXNY4rN6EerPMbNH_1GBkcBZKIEV/exec";
+var API_URL_SATURDAY = "https://script.google.com/macros/s/AKfycbw25pAwcgfVaQ0nQCZtPezYhdfykOrFtsq8elSbdXNY4rN6EerPMbNH_1GBkcBZKIEV/exec";
+var API_URL_HOLIDAY  = "https://script.google.com/macros/s/AKfycbw25pAwcgfVaQ0nQCZtPezYhdfykOrFtsq8elSbdXNY4rN6EerPMbNH_1GBkcBZKIEV/exec";
 
 var currentMode = 'normal';
 var MODE_COLORS = { normal: '#2e7d32', saturday: '#1565c0', holiday: '#6a1b9a' };
@@ -1095,7 +1110,14 @@ function formatRegTime(raw) {
 }
 
 // ===== REASON MODAL + APPROVAL SEND =====
-function openReasonModal() {
+var pendingAdjusted = false; // true = الإرسال بعد التعديل (Resend after adjustment)
+function updateReasonModalTexts() {
+    document.getElementById('reasonModalTitle').textContent = t(pendingAdjusted ? 'reasonModalTitleAdjusted' : 'reasonModalTitle');
+    document.getElementById('reasonModalSub').textContent   = t(pendingAdjusted ? 'reasonModalSubtitleAdjusted' : 'reasonModalSubtitle');
+}
+function openReasonModal(adjusted) {
+    pendingAdjusted = !!adjusted;
+    updateReasonModalTexts();
     document.getElementById('reasonInp').value = '';
     document.getElementById('reasonErr').style.display = 'none';
     document.getElementById('reasonServerErr').style.display = 'none';
@@ -1124,7 +1146,7 @@ async function confirmSendApproval() {
 
     try {
         var ctrl=new AbortController(), timer=setTimeout(function(){ ctrl.abort(); },40000);
-        var url = getApiUrl(currentMode) + '?action=sendApprovalBatch&reason=' + encodeURIComponent(reason);
+        var url = getApiUrl(currentMode) + '?action=sendApprovalBatch&reason=' + encodeURIComponent(reason) + (pendingAdjusted ? '&adjusted=1' : '');
         var res = await fetch(url, { signal: ctrl.signal });
         clearTimeout(timer);
         var data = await res.json();
@@ -1156,6 +1178,7 @@ async function confirmSendApproval() {
 var HISTORY_POLL_MS = 5000; // كل كام ملي ثانية نحدّث الـ History
 var historyPollInterval = null;
 var lastHistoryList = [];
+var lastHistorySig = null;
 
 function startHistoryPolling() {
     stopHistoryPolling();
@@ -1181,6 +1204,9 @@ async function loadApprovalHistory() {
         if (data.status === 'success') {
             lastHistoryList = data.list || [];
             renderApprovalHistory(lastHistoryList);
+            var sig = lastHistoryList.map(function(i){ return i.createdAt + '|' + i.deptStatus + '|' + i.factoryStatus; }).join(';');
+            if (lastHistorySig !== null && sig !== lastHistorySig && cacheLoadedStore[currentMode]) refreshRegistered(currentMode);
+            lastHistorySig = sig;
         }
     } catch (e) {}
 }
@@ -1194,7 +1220,8 @@ function statusKey(raw) {
 }
 function statusBadge(raw) {
     var key = statusKey(raw);
-    var label = key === 'approved' ? t('statusApproved') : key === 'rejected' ? t('statusRejected') : key === 'pending' ? t('statusPending') : t('statusNotYet');
+    var isAdj = String(raw || '').toLowerCase().indexOf('adjusted') !== -1;
+    var label = key === 'approved' ? t('statusApproved') : key === 'rejected' ? (isAdj ? t('statusRejectedAdjusted') : t('statusRejected')) : key === 'pending' ? t('statusPending') : t('statusNotYet');
     return '<span class="status-badge ' + key + '"><span class="dot"></span>' + label + '</span>';
 }
 function escapeHtml(str) {
@@ -1216,6 +1243,7 @@ function renderApprovalHistory(list) {
         el.innerHTML =
             '<div class="history-row1"><span class="history-date">' + escapeHtml(item.createdAt ? String(item.createdAt).slice(0,16) : item.date) + '</span>' +
             '<span class="history-count">' + escapeHtml(item.count) + '</span></div>' +
+            (item.note ? '<div style="margin-bottom:6px;"><span class="status-badge pending"><span class="dot"></span>' + t('historyAdjustedTag') + '</span></div>' : '') +
             (item.reason ? '<div class="history-reason">' + escapeHtml(item.reason) + '</div>' : '') +
             '<div class="history-statuses">' +
               '<span style="color:#666;font-size:10px;">' + t('historyManagerLabel') + ':</span>' + statusBadge(item.deptStatus) +
